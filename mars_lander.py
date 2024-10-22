@@ -43,7 +43,6 @@ class Vaisseau:
         # Calcul des vitesses
         self.v_speed += gravite
 
-
         # Conversion en radians
         angle_radians = math.radians(self.angle)
 
@@ -56,7 +55,6 @@ class Vaisseau:
         self.h_speed -= self.puissance * sin
 
         # Calcul des positions
-
         self.y += self.v_speed
         self.x += self.h_speed
 
@@ -65,9 +63,6 @@ class Vaisseau:
             return True
         else:
             return False
-
-        
-
 
 
 class Surface:
@@ -119,8 +114,8 @@ class Affichage:
         
         image = pygame.image.load(img)
         image = pygame.transform.rotate(image, vaisseau.angle)  # Pour incliner l'image selon l'angle
-        rect = image.get_rect(center=(vaisseau.x // echelle, vaisseau.y // echelle))
-        self.screen.blit(image, rect)
+        self.rect = image.get_rect(center=(vaisseau.x // echelle, vaisseau.y // echelle))
+        self.screen.blit(image, self.rect)
 
     def effacer_tout(self):
         self.screen.fill(self.BLANC)
@@ -132,26 +127,61 @@ class Affichage:
         text_a_afficher = font.render(text, True, NOIR)
         self.screen.blit(text_a_afficher, pos)
 
+    def traduction_angle(self, angle):
+        calcul = angle % 360
+        
+        return calcul
+
     def ecrire_info(self, vaisseau):
-        self.affiche_info("x",          vaisseau.x,         (10,0))
-        self.affiche_info("y",          vaisseau.y,         (10,25))
-        self.affiche_info("v_speed",    vaisseau.v_speed,   (10,50))
-        self.affiche_info("h_speed",    vaisseau.h_speed,   (10,75))
-        self.affiche_info("fuel",       vaisseau.fuel,      (10,100))
-        self.affiche_info("angle",      vaisseau.angle,     (10,125))
-        self.affiche_info("puissance",  vaisseau.puissance, (10,150))
-        self.affiche_info("gravite",    gravite,            (10,175))
+        self.affiche_info("x",          vaisseau.x,             (10,0))
+        self.affiche_info("y",          vaisseau.y,             (10,25))
+        self.affiche_info("v_speed",    vaisseau.v_speed,       (10,50))
+        self.affiche_info("h_speed",    vaisseau.h_speed,       (10,75))
+        self.affiche_info("fuel",       vaisseau.fuel,          (10,100))
+        self.affiche_info("angle",      self.traduction_angle(vaisseau.angle) , (10,125))
+        self.affiche_info("puissance",  vaisseau.puissance,     (10,150))
+        self.affiche_info("gravite",    gravite,                (10,175))
     
 
-                            
-scenar = scenario1
+class Jeu:
+    def actualisation(self, v, a, s, scenar):
+        # VAISSEAU
+        v.actualisation()
+        v.verif_si_HS()
+
+        # AFFICHAGE
+        a.effacer_tout()
+        a.ecrire_info(v)
+        a.dessiner_surface(s.mars_surface)
+        a.dessiner_vaisseau(v)
+        pygame.display.flip()
+        if v.detruit:
+            sleep(1)
+            v = None
+            v = Vaisseau(scenar['vaisseau'])
+        
+    def crash_sur_mars(self, a, v, s):
+        points = []
+        for i in range(len(s.mars_surface) - 1):
+            pt1 = s.mars_surface[i]
+            pt2 = s.mars_surface[i + 1]
+            points.append((pt1, pt2))
+            
+            print(points)
+        color = "red" if any(a.rect.clipline(*point) for point in points) else "green"
+        print(color)    
+
+
+        
+                        
+scenar = scenario0
 
 
 # Initialisation des objets
 v = Vaisseau(scenar['vaisseau'])
 s = Surface(scenar['surface_mars'])
 a = Affichage()
-
+j = Jeu()
 
 zone = s.calcul_zone_atterissage()
 
@@ -181,20 +211,7 @@ while True:
     
     clock.tick(img_par_sec)
     
+    j.actualisation(v, a, s, scenar)
+    j.crash_sur_mars(a, v, s)
 
-    # VAISSEAU
-    v.actualisation()
-    v.verif_si_HS()
-
-    # AFFICHAGE
-    a.effacer_tout()
-    a.ecrire_info(v)
-    a.dessiner_surface(s.mars_surface)
-    a.dessiner_vaisseau(v)
-    pygame.display.flip()
-    if v.detruit:
-        sleep(1)
-        v = None
-        v = Vaisseau(scenar['vaisseau'])
-    
-
+   

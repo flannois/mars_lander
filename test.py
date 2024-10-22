@@ -1,15 +1,33 @@
-import math
+import pygame
 
-# Angle en degrés
-angle_degrees = 45
+pygame.init()
+window = pygame.display.set_mode((400, 400))
+clock = pygame.time.Clock()
 
-# Conversion en radians
-angle_radians = math.radians(angle_degrees)
+rect = pygame.Rect(180, 180, 40, 40)
+speed = 5
+lines = [((20, 300), (150, 20)), ((20, 300), (380, 250)), ((380, 250), (20, 300))]
 
-# Calcul du sinus et du cosinus
-sin_value = math.sin(angle_radians)
-cos_value = math.cos(angle_radians)
+run = True
+while run:
+    clock.tick(100)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False 
 
-print(f"Sinus de {angle_degrees}° : {sin_value}")
-print(f"Cosinus de {angle_degrees}° : {cos_value}")
+    keys = pygame.key.get_pressed()
+    rect.x += (keys[pygame.K_RIGHT] - keys[pygame.K_LEFT]) * speed
+    rect.y += (keys[pygame.K_DOWN] - keys[pygame.K_UP]) * speed
+    rect.centerx %= window.get_width()
+    rect.centery %= window.get_height()
+    print(*line)
+    color = "red" if any(rect.clipline(*line) for line in lines) else "green"
 
+    window.fill(0)
+    pygame.draw.rect(window, color, rect)
+    for line in lines:
+        pygame.draw.line(window, "white", *line)
+    pygame.display.flip()
+
+pygame.quit()
+exit()
