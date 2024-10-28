@@ -37,32 +37,37 @@ class Vaisseau:
     def actualisation(self):
         if self.fuel <= 0:
             self.puissance = 0
-
-        self.fuel -= self.puissance
         
-        # Calcul des vitesses
-        self.v_speed += gravite
+        if not self.detruit:
+            self.fuel -= self.puissance
+        
+            # Calcul des vitesses
+            self.v_speed += gravite
 
-        # Conversion en radians
-        angle_radians = math.radians(self.angle)
+            # Conversion en radians
+            angle_radians = math.radians(self.angle)
 
-        # Calcul du sinus et du cosinus
-        sin = math.sin(angle_radians)
-        cos= math.cos(angle_radians)
+            # Calcul du sinus et du cosinus
+            sin = math.sin(angle_radians)
+            cos= math.cos(angle_radians)
 
-        # Calcul trigo pour vitesse
-        self.v_speed -= self.puissance * cos
-        self.h_speed -= self.puissance * sin
+            # Calcul trigo pour vitesse
+            self.v_speed -= self.puissance * cos
+            self.h_speed -= self.puissance * sin
 
-        # Calcul des positions
-        self.y += self.v_speed
-        self.x += self.h_speed
+            # Calcul des positions
+            self.y += self.v_speed
+            self.x += self.h_speed
 
     def peut_atterir(self):
         if self.angle == 0 and abs(self.v_speed) < 40 and abs(self.h_speed) < 20:
+            print('Peut atterir')
             return True
         else:
+            
             return False
+
+    
 
 
 class Surface:
@@ -105,10 +110,12 @@ class Affichage:
             pygame.draw.line(self.screen, self.ROUGE, (x1, self.fenY - y1), (x2, self.fenY - y2), 2)
 
     def dessiner_vaisseau(self, vaisseau):
-        
+        print("dessin")
         if not vaisseau.detruit:
+            
             img = f'images/vaisseau{vaisseau.puissance}.png'
         else:
+            print("detruit")
             img = "images/detruit.png"
         
         image = pygame.image.load(img)
@@ -143,7 +150,7 @@ class Affichage:
     
 
 class Jeu:
-    def actualisation(self, v, a, s, scenar):
+    def actualisation(self, v, a, s):
         # VAISSEAU
         v.actualisation()
         v.verif_si_HS()
@@ -151,8 +158,9 @@ class Jeu:
         # AFFICHAGE
         a.effacer_tout()
         a.ecrire_info(v)
-        a.dessiner_surface(s.mars_surface)
         a.dessiner_vaisseau(v)
+        a.dessiner_surface(s.mars_surface)
+        
         pygame.display.flip()
         
         
@@ -177,38 +185,16 @@ class Jeu:
         if v.detruit:
             v.v_speed = 0
             v.h_speed = 0
+
+
+    def je_relance_le_jeu(self, v):
+        if v.detruit:
             sleep(1)
             v = None
             v = Vaisseau(scenar['vaisseau'])
+        return v
 
-    def atterissage_possible(self, v, s):
-
-        # atterrir sur un sol plat
-        # s.atterissage
-
-        # atterrir dans une position verticale (angle = 0°)
-        if v.angle == 0:
-            angle_atterissage = True
-        else:
-            angle_atterissage = False
-
-        # la vitesse verticale doit être limitée ( ≤ 40 m/s en valeur absolue)
-        if abs(v.v_speed) <= 40:
-            v_speed_atterissage = True
-        else:
-            v_speed_atterissage =  False
-        
-        # la vitesse horizontale doit être limitée ( ≤ 20 m/s en valeur absolue)
-        if abs(v.h_speed) <= 20:
-            h_speed_atterissage = True
-        else:
-            h_speed_atterissage =  False
-        
-        # Verif si atterissage possible
-        if angle_atterissage and v_speed_atterissage and h_speed_atterissage:
-            return True
-        else:
-            return False
+    
 
                   
 scenar = scenario1
@@ -248,8 +234,14 @@ while True:
     
     clock.tick(img_par_sec)
     
-    j.actualisation(v, a, s, scenar)
+    
+    
+    j.actualisation(v, a, s)
     j.touche_mars(a, v, s)
-    print(j.atterissage_possible(v, s))
+
+    v.peut_atterir()
+
     j.fin_du_jeu(v)
+    v = j.je_relance_le_jeu(v)
+    
    
