@@ -181,8 +181,36 @@ class Jeu:
             v = None
             v = Vaisseau(scenar['vaisseau'])
 
+    def atterissage_possible(self, v, s):
+
+        # atterrir sur un sol plat
+        # s.atterissage
+
+        # atterrir dans une position verticale (angle = 0°)
+        if v.angle == 0:
+            angle_atterissage = True
+        else:
+            angle_atterissage = False
+
+        # la vitesse verticale doit être limitée ( ≤ 40 m/s en valeur absolue)
+        if abs(v.v_speed) <= 40:
+            v_speed_atterissage = True
+        else:
+            v_speed_atterissage =  False
         
-                        
+        # la vitesse horizontale doit être limitée ( ≤ 20 m/s en valeur absolue)
+        if abs(v.h_speed) <= 20:
+            h_speed_atterissage = True
+        else:
+            h_speed_atterissage =  False
+        
+        # Verif si atterissage possible
+        if angle_atterissage and v_speed_atterissage and h_speed_atterissage:
+            return True
+        else:
+            return False
+
+                  
 scenar = scenario1
 
 
@@ -222,6 +250,6 @@ while True:
     
     j.actualisation(v, a, s, scenar)
     j.touche_mars(a, v, s)
-
+    print(j.atterissage_possible(v, s))
     j.fin_du_jeu(v)
    

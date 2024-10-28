@@ -1,10 +1,10 @@
 echelle = 5 # 1/echelle
-img_par_sec = 24
+img_par_sec = 12
 
 degres_par_tour = 15
 
 gravite = 3.711
-gravite = 1
+gravite = 0.5
 
 fenX = 7000
 fenY = 3000
