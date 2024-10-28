@@ -1,10 +1,10 @@
 echelle = 5 # 1/echelle
-img_par_sec = 12
+img_par_sec = 24
 
 degres_par_tour = 15
 
 gravite = 3.711
-gravite = 0
+gravite = 1
 
 fenX = 7000
 fenY = 3000
@@ -16,7 +16,7 @@ BLEU = (0, 0, 255)
 NOIR = (0, 0, 0)
 
 scenario0 = {
-    "surface_mars"   : [(0, 100),(6999, 100)],
+    "surface_mars"   : [(0, 200),(6999, 200)],
     "vaisseau"  :{"x":3500,"y":2500,"h_speed":0,"v_speed":0,"fuel":1000,"rotate":0,"power":0}
 }
 

@@ -78,8 +78,7 @@ class Surface:
                 self.atterissage = ((p1X, p1Y),(p2X, p2Y))
 
         print(self.atterissage)
-            
-
+   
 
 class Affichage:
     def __init__(self):
@@ -155,26 +154,36 @@ class Jeu:
         a.dessiner_surface(s.mars_surface)
         a.dessiner_vaisseau(v)
         pygame.display.flip()
+        
+        
+    def touche_mars(self, a, v, s):
+        points = []
+        for i in range(len(s.mars_surface) - 1):
+            pt1, pt2 = s.mars_surface[i]
+            pt3, pt4 = s.mars_surface[i + 1]
+
+            pt1 = pt1 // echelle
+            pt2 = (fenY // echelle) - (pt2 // echelle)
+            pt3 = pt3 // echelle
+            pt4 = (fenY // echelle) - (pt4 // echelle)
+
+            points.append(((pt1, pt2), (pt3, pt4)))
+
+        crash = True if any(a.rect.clipline(*point) for point in points) else False
+        if crash:
+            v.detruit = True
+           
+    def fin_du_jeu(self, v):
         if v.detruit:
+            v.v_speed = 0
+            v.h_speed = 0
             sleep(1)
             v = None
             v = Vaisseau(scenar['vaisseau'])
-        
-    def crash_sur_mars(self, a, v, s):
-        points = []
-        for i in range(len(s.mars_surface) - 1):
-            pt1 = s.mars_surface[i]
-            pt2 = s.mars_surface[i + 1]
-            points.append((pt1, pt2))
-            
-            print(points)
-        color = "red" if any(a.rect.clipline(*point) for point in points) else "green"
-        print(color)    
-
 
         
                         
-scenar = scenario0
+scenar = scenario1
 
 
 # Initialisation des objets
@@ -212,6 +221,7 @@ while True:
     clock.tick(img_par_sec)
     
     j.actualisation(v, a, s, scenar)
-    j.crash_sur_mars(a, v, s)
+    j.touche_mars(a, v, s)
 
+    j.fin_du_jeu(v)
    
