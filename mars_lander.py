@@ -110,7 +110,7 @@ class Affichage:
             x2, y2 = surface_mars[i + 1]
             x2, y2 = x2 // echelle, y2 // echelle
 
-            pygame.draw.line(self.screen, self.ROUGE, (x1, self.fenY - y1), (x2, self.fenY - y2), 2)
+            pygame.draw.line(self.screen, self.ROUGE, (x1, self.fenY - y1), (x2, self.fenY - y2), 10)
 
     def dessiner_vaisseau(self, vaisseau, j):
         
@@ -202,7 +202,13 @@ class Jeu:
         v.init_vaisseau(scenar['vaisseau'])
         return v
     
-scenar = scenario2
+
+class IAlearning:
+    ICI JE METS mes classes
+
+
+
+scenar = scenario1
 
 # Initialisation des objets
 v = Vaisseau()

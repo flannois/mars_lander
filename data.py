@@ -5,6 +5,7 @@ degres_par_tour = 15
 
 gravite = 3.711
 
+angle_vaisseau_max = 90
 
 # Atterissage
 max_v_speed = 40
