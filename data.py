@@ -1,4 +1,4 @@
-echelle = 5 # 1/echelle
+echelle = 10 # 1/echelle
 img_par_sec = 12
 
 degres_par_tour = 15

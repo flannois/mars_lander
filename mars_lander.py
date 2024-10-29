@@ -2,10 +2,10 @@ from data import *
 import pygame
 
 import math
-from time import sleep
 
 class Vaisseau:
-    def __init__(self, info):
+    def init_vaisseau(self, info):
+        
         self.x =            info['x']
         self.y =            fenY - info['y']
         self.h_speed =      info['h_speed']
@@ -61,7 +61,7 @@ class Vaisseau:
 
     def peut_atterir(self):
         if self.angle == 0 and abs(self.v_speed) < 40 and abs(self.h_speed) < 20:
-            print('Peut atterir')
+           
             return True
         else:
             
@@ -82,7 +82,7 @@ class Surface:
             if p1Y == p2Y:
                 self.atterissage = ((p1X, p1Y),(p2X, p2Y))
 
-        print(self.atterissage)
+        
    
 
 class Affichage:
@@ -110,12 +110,12 @@ class Affichage:
             pygame.draw.line(self.screen, self.ROUGE, (x1, self.fenY - y1), (x2, self.fenY - y2), 2)
 
     def dessiner_vaisseau(self, vaisseau):
-        print("dessin")
+        
         if not vaisseau.detruit:
             
             img = f'images/vaisseau{vaisseau.puissance}.png'
         else:
-            print("detruit")
+            
             img = "images/detruit.png"
         
         image = pygame.image.load(img)
@@ -186,22 +186,17 @@ class Jeu:
             v.v_speed = 0
             v.h_speed = 0
 
-
     def je_relance_le_jeu(self, v):
-        if v.detruit:
-            sleep(1)
-            v = None
-            v = Vaisseau(scenar['vaisseau'])
+        v = None
+        v = Vaisseau()
+        v.init_vaisseau(scenar['vaisseau'])
         return v
-
     
-
-                  
-scenar = scenario1
-
+scenar = scenario0
 
 # Initialisation des objets
-v = Vaisseau(scenar['vaisseau'])
+v = Vaisseau()
+v.init_vaisseau(scenar['vaisseau'])
 s = Surface(scenar['surface_mars'])
 a = Affichage()
 j = Jeu()
@@ -217,6 +212,9 @@ while True:
             pygame.quit()
             
     keys = pygame.key.get_pressed()
+    if keys[pygame.K_SPACE]:
+        v = j.je_relance_le_jeu(v)
+    
     if keys[pygame.K_LEFT]:
         v.angle += degres_par_tour
     if keys[pygame.K_RIGHT]:
@@ -242,6 +240,6 @@ while True:
     v.peut_atterir()
 
     j.fin_du_jeu(v)
-    v = j.je_relance_le_jeu(v)
+    
     
    
