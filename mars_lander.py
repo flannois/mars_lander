@@ -5,7 +5,6 @@ import math
 
 class Vaisseau:
     def init_vaisseau(self, info):
-        
         self.x =            info['x']
         self.y =            fenY - info['y']
         self.h_speed =      info['h_speed']
@@ -14,6 +13,7 @@ class Vaisseau:
         self.angle =        info['rotate']
         self.puissance =    info['power']
         self.detruit =      False
+        self.est_pose =     False
 
     def en_dehors_de_la_zone(self):
         if not 0 < self.x < fenX or not 0 < self.y < fenY:
@@ -30,15 +30,17 @@ class Vaisseau:
 
     def a_plus_dessence(self):
         if self.fuel <= 0:
+            self.fuel = 0
             return True
         else:
             return False
 
     def actualisation(self):
-        if self.fuel <= 0:
+        if self.fuel <= 0 or self.detruit or self.est_pose:
             self.puissance = 0
         
-        if not self.detruit:
+        if not self.detruit and not self.est_pose:
+           
             self.fuel -= self.puissance
         
             # Calcul des vitesses
@@ -49,7 +51,7 @@ class Vaisseau:
 
             # Calcul du sinus et du cosinus
             sin = math.sin(angle_radians)
-            cos= math.cos(angle_radians)
+            cos = math.cos(angle_radians)
 
             # Calcul trigo pour vitesse
             self.v_speed -= self.puissance * cos
@@ -60,15 +62,11 @@ class Vaisseau:
             self.x += self.h_speed
 
     def peut_atterir(self):
-        if self.angle == 0 and abs(self.v_speed) < 40 and abs(self.h_speed) < 20:
-           
+        if self.angle == 0 and abs(self.v_speed) < max_v_speed and abs(self.h_speed) < max_h_speed:
             return True
         else:
-            
             return False
-
-    
-
+        
 
 class Surface:
     def __init__(self, mars_surface):
@@ -82,7 +80,12 @@ class Surface:
             if p1Y == p2Y:
                 self.atterissage = ((p1X, p1Y),(p2X, p2Y))
 
-        
+    def est_dans_la_zone(self,v):
+        zoneAtterissageGauche, zoneAtterissageDroite = self.atterissage
+        if zoneAtterissageGauche[0] < v.x < zoneAtterissageDroite[0]:
+            return True
+        else:
+            return False
    
 
 class Affichage:
@@ -109,14 +112,15 @@ class Affichage:
 
             pygame.draw.line(self.screen, self.ROUGE, (x1, self.fenY - y1), (x2, self.fenY - y2), 2)
 
-    def dessiner_vaisseau(self, vaisseau):
+    def dessiner_vaisseau(self, vaisseau, j):
         
         if not vaisseau.detruit:
-            
             img = f'images/vaisseau{vaisseau.puissance}.png'
         else:
-            
             img = "images/detruit.png"
+        
+        if vaisseau.est_pose:
+            img = "images/vaisseauA.png"
         
         image = pygame.image.load(img)
         image = pygame.transform.rotate(image, vaisseau.angle)  # Pour incliner l'image selon l'angle
@@ -135,7 +139,6 @@ class Affichage:
 
     def traduction_angle(self, angle):
         calcul = angle % 360
-        
         return calcul
 
     def ecrire_info(self, vaisseau):
@@ -158,12 +161,11 @@ class Jeu:
         # AFFICHAGE
         a.effacer_tout()
         a.ecrire_info(v)
-        a.dessiner_vaisseau(v)
+        a.dessiner_vaisseau(v, self)
         a.dessiner_surface(s.mars_surface)
         
         pygame.display.flip()
-        
-        
+            
     def touche_mars(self, a, v, s):
         points = []
         for i in range(len(s.mars_surface) - 1):
@@ -177,14 +179,22 @@ class Jeu:
 
             points.append(((pt1, pt2), (pt3, pt4)))
 
-        crash = True if any(a.rect.clipline(*point) for point in points) else False
-        if crash:
-            v.detruit = True
+        atterissage = True if any(a.rect.clipline(*point) for point in points) else False
+        
+        if atterissage:
+            if s.est_dans_la_zone(v) and v.peut_atterir() and not v.detruit:
+                j.est_gagne = True
+                v.est_pose = True
+            else:
+                j.est_gagne = False
+                v.detruit = True
+            self.fin_du_jeu(v)
            
     def fin_du_jeu(self, v):
-        if v.detruit:
+        if v.detruit or v.est_pose:
             v.v_speed = 0
             v.h_speed = 0
+            
 
     def je_relance_le_jeu(self, v):
         v = None
@@ -192,7 +202,7 @@ class Jeu:
         v.init_vaisseau(scenar['vaisseau'])
         return v
     
-scenar = scenario0
+scenar = scenario2
 
 # Initialisation des objets
 v = Vaisseau()
@@ -201,7 +211,7 @@ s = Surface(scenar['surface_mars'])
 a = Affichage()
 j = Jeu()
 
-zone = s.calcul_zone_atterissage()
+s.calcul_zone_atterissage()
 
 clock = pygame.time.Clock()
 
@@ -215,20 +225,21 @@ while True:
     if keys[pygame.K_SPACE]:
         v = j.je_relance_le_jeu(v)
     
-    if keys[pygame.K_LEFT]:
-        v.angle += degres_par_tour
-    if keys[pygame.K_RIGHT]:
-        v.angle -= degres_par_tour
-    if keys[pygame.K_1]:
-        v.puissance = 0
-    if keys[pygame.K_2]:
-        v.puissance = 1
-    if keys[pygame.K_3]:
-        v.puissance = 2
-    if keys[pygame.K_4]:
-        v.puissance = 3
-    if keys[pygame.K_5]:
-        v.puissance = 4
+    if not v.detruit and not v.est_pose:
+        if keys[pygame.K_LEFT]:
+            v.angle += degres_par_tour
+        if keys[pygame.K_RIGHT]:
+            v.angle -= degres_par_tour
+        if keys[pygame.K_1]:
+            v.puissance = 0
+        if keys[pygame.K_2]:
+            v.puissance = 1
+        if keys[pygame.K_3]:
+            v.puissance = 2
+        if keys[pygame.K_4]:
+            v.puissance = 3
+        if keys[pygame.K_5]:
+            v.puissance = 4
     
     clock.tick(img_par_sec)
     
@@ -238,7 +249,7 @@ while True:
     j.touche_mars(a, v, s)
 
     v.peut_atterir()
-
+    
     j.fin_du_jeu(v)
     
     
