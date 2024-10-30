@@ -5,9 +5,7 @@ import math
 import numpy as np
 
 import random
-
-import pyautogui
-
+from time import sleep
 class Vaisseau:
     def init_vaisseau(self, info):
         self.x =            info['x']
@@ -147,28 +145,33 @@ class Affichage:
         return calcul
 
     def ecrire_info(self, vaisseau, ia, j):
-        self.affiche_info("x",          vaisseau.x,             (10,0))
-        self.affiche_info("y",          vaisseau.y,             (10,25))
-        self.affiche_info("v_speed",    vaisseau.v_speed,       (10,50))
-        self.affiche_info("h_speed",    vaisseau.h_speed,       (10,75))
-        self.affiche_info("fuel",       vaisseau.fuel,          (10,100))
+        self.affiche_info("x",          vaisseau.x,         (10,0))
+        self.affiche_info("y",          vaisseau.y,         (10,25))
+        self.affiche_info("v_speed",    vaisseau.v_speed,   (10,50))
+        self.affiche_info("h_speed",    vaisseau.h_speed,   (10,75))
+        self.affiche_info("fuel",       vaisseau.fuel,      (10,100))
         self.affiche_info("angle",      self.traduction_angle(vaisseau.angle) , (10,125))
-        self.affiche_info("puissance",  vaisseau.puissance,     (10,150))
-        self.affiche_info("gravite",    gravite,                (10,175))
+        self.affiche_info("puissance",  vaisseau.puissance, (10,150))
+        self.affiche_info("gravite",    gravite,            (10,175))
 
         self.affiche_info("Tx ap",      ia.alpha,           (1000,0))
         self.affiche_info("Rec fut",    ia.gamma,           (1000,25))
         self.affiche_info("Tx exp",     ia.epsilon,         (1000,50))
         self.affiche_info("Tx ap",      ia.epsilon_decay,   (1000,75))
         
-        self.affiche_info("Tentative",  j.tentative,   (1000,125))
-        
-                 
+        self.affiche_info("Tentative",  j.tentative,        (1000,125))
+        self.affiche_info("Atterissages",  j.att_reussi,    (1000,150))
 
+        self.affiche_info("Récompense",  ia.reward,         (1000,200))
+
+        
+
+        self.affiche_info("Img/sec",  img_par_sec,   (500,10))
 
 class Jeu:
     def __init__(self):
         self.tentative = 0
+        self.att_reussi = 0
 
     def actualisation(self, v, a, s):
         # VAISSEAU
@@ -202,6 +205,8 @@ class Jeu:
             if s.est_dans_la_zone(v) and v.peut_atterir() and not v.detruit:
                 j.est_gagne = True
                 v.est_pose = True
+                self.att_reussi += 1
+                sleep(1)
             else:
                 j.est_gagne = False
                 v.detruit = True
@@ -250,6 +255,7 @@ class Jeu:
         actions.append('2')
         actions.append('3')
         actions.append('4')
+        
         return actions
         
 
@@ -262,6 +268,7 @@ class IALearning:
         self.epsilon = epsilon      # Taux d'exploration
         self.epsilon_decay = epsilon_decay
         self.q_table = {}           # Table Q pour stocker les états et les actions
+        self.reward = 0
 
     def get_state(self, vaisseau, surface):
         # État défini par position, vitesse horizontale et verticale, carburant, et si en zone d'atterrissage
@@ -270,14 +277,14 @@ class IALearning:
                 int(vaisseau.angle), int(vaisseau.fuel),
                 surface.est_dans_la_zone(vaisseau))
 
-    def choose_action(self, state):
+    def choisir_action(self, state):
         # Choisir une action basée sur l'état courant en utilisant epsilon-greedy
         if random.uniform(0, 1) < self.epsilon:
             return random.choice(self.actions)  # Exploration
         else:
-            return self.best_action(state)  # Exploitation
+            return self.meilleure_action(state)  # Exploitation
 
-    def best_action(self, state):
+    def meilleure_action(self, state):
         # Trouver la meilleure action pour un état donné
         if state not in self.q_table:
             self.q_table[state] = np.zeros(len(self.actions))  # Initialiser si pas dans Q-table
@@ -297,18 +304,29 @@ class IALearning:
         # Equation de mise à jour Q-learning
         self.q_table[state][action_index] += self.alpha * (reward + self.gamma * best_future_q - self.q_table[state][action_index])
 
-    def get_reward(self, vaisseau):
-        # Calcul des récompenses basées sur la vitesse et la position pour encourager un atterrissage stable
-        if vaisseau.est_pose:
-            return 100  # Récompense élevée pour un atterrissage réussi
-        if vaisseau.detruit:
-            return -100  # Pénalité pour un crash
-        if vaisseau.angle == 0:
-            return 5
-        # Récompenses pour contrôler la vitesse
-        reward = - (abs(vaisseau.v_speed) + abs(vaisseau.h_speed))
-        if abs(vaisseau.v_speed) < max_v_speed and abs(vaisseau.h_speed) < max_h_speed:
-            reward += 10  # Récompense supplémentaire pour rester dans les limites de vitesse
+    def get_reward(self, a, v, s):
+        
+        reward = 100 - abs(v.v_speed) - abs(v.h_speed)
+        
+        # Récompense pour encourager un atterrissage stable
+        if v.est_pose:
+            reward += 100  # Récompense élevée pour un atterrissage réussi
+        if v.detruit:
+            reward -= 100  # Pénalité pour un crash
+            
+        # Récompenses pour contrôle de vitesse et stabilité
+        if abs(v.angle) == 0:
+            reward += 4
+
+        if v.en_dehors_de_la_zone:
+            reward -= 1
+        elif s.est_dans_la_zone(v):
+            reward += 5
+
+        if j.touche_mars(a, v, s):
+            reward += 20
+
+        self.reward = reward
         return reward
 
     def decay_epsilon(self):
@@ -345,21 +363,18 @@ while True:
             pygame.quit()
     
     state = ia.get_state(v, s)
-    ia_action = ia.choose_action(state)
+    ia_action = ia.choisir_action(state)
     
 
     keys = pygame.key.get_pressed()
     j.actions_clavier(keys, v, ia_action)
-    
-    
-    
 
     # Actualisation de l'état et affichage
     j.actualisation(v, a, s)
     j.touche_mars(a, v, s)
 
     # Calcul de la récompense et mise à jour
-    reward = ia.get_reward(v)
+    reward = ia.get_reward(a, v, s)
     next_state = ia.get_state(v, s)
     ia.update_q_table(state, ia_action, reward, next_state)
     
