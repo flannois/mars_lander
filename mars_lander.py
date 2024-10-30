@@ -2,6 +2,11 @@ from data import *
 import pygame
 
 import math
+import numpy as np
+
+import random
+
+import pyautogui
 
 class Vaisseau:
     def init_vaisseau(self, info):
@@ -141,7 +146,7 @@ class Affichage:
         calcul = angle % 360
         return calcul
 
-    def ecrire_info(self, vaisseau):
+    def ecrire_info(self, vaisseau, ia, j):
         self.affiche_info("x",          vaisseau.x,             (10,0))
         self.affiche_info("y",          vaisseau.y,             (10,25))
         self.affiche_info("v_speed",    vaisseau.v_speed,       (10,50))
@@ -150,9 +155,21 @@ class Affichage:
         self.affiche_info("angle",      self.traduction_angle(vaisseau.angle) , (10,125))
         self.affiche_info("puissance",  vaisseau.puissance,     (10,150))
         self.affiche_info("gravite",    gravite,                (10,175))
-    
+
+        self.affiche_info("Tx ap",      ia.alpha,           (1000,0))
+        self.affiche_info("Rec fut",    ia.gamma,           (1000,25))
+        self.affiche_info("Tx exp",     ia.epsilon,         (1000,50))
+        self.affiche_info("Tx ap",      ia.epsilon_decay,   (1000,75))
+        
+        self.affiche_info("Tentative",  j.tentative,   (1000,125))
+        
+                 
+
 
 class Jeu:
+    def __init__(self):
+        self.tentative = 0
+
     def actualisation(self, v, a, s):
         # VAISSEAU
         v.actualisation()
@@ -160,7 +177,7 @@ class Jeu:
 
         # AFFICHAGE
         a.effacer_tout()
-        a.ecrire_info(v)
+        a.ecrire_info(v, ia, j)
         a.dessiner_vaisseau(v, self)
         a.dessiner_surface(s.mars_surface)
         
@@ -195,20 +212,113 @@ class Jeu:
             v.v_speed = 0
             v.h_speed = 0
             
-
     def je_relance_le_jeu(self, v):
+        self.tentative += 1
         v = None
         v = Vaisseau()
         v.init_vaisseau(scenar['vaisseau'])
         return v
     
+    def actions_clavier(self, keys, v, ia_action):
+        
+        if keys[pygame.K_SPACE]:
+            v = self.je_relance_le_jeu(v)
+        
+        if not v.detruit and not v.est_pose:
+            if keys[pygame.K_LEFT] or ia_action == 'left':
+                v.angle += degres_par_tour
+            if keys[pygame.K_RIGHT] or ia_action == 'right':
+                v.angle -= degres_par_tour
+            if keys[pygame.K_1] or ia_action == '0':
+                v.puissance = 0
+            if keys[pygame.K_2] or ia_action == '1':
+                v.puissance = 1
+            if keys[pygame.K_3] or ia_action == '2':
+                v.puissance = 2
+            if keys[pygame.K_4] or ia_action == '3':
+                v.puissance = 3
+            if keys[pygame.K_5] or ia_action == '4':
+                v.puissance = 4
+        return v
+    
+    def actions_possibles(self):
+        actions = []
+        actions.append('left')
+        actions.append('right')
+        actions.append('0')
+        actions.append('1')
+        actions.append('2')
+        actions.append('3')
+        actions.append('4')
+        return actions
+        
 
-class IAlearning:
-    ICI JE METS mes classes
+class IALearning:
+    def __init__(self, actions, alpha=0.1, gamma=0.9, epsilon=1.0, epsilon_decay=0.995):
+        # Liste des actions possibles : inclinaison et niveaux de puissance
+        self.actions = actions
+        self.alpha = alpha          # Taux d'apprentissage
+        self.gamma = gamma          # Facteur de récompense future
+        self.epsilon = epsilon      # Taux d'exploration
+        self.epsilon_decay = epsilon_decay
+        self.q_table = {}           # Table Q pour stocker les états et les actions
 
+    def get_state(self, vaisseau, surface):
+        # État défini par position, vitesse horizontale et verticale, carburant, et si en zone d'atterrissage
+        return (int(vaisseau.x), int(vaisseau.y), 
+                int(vaisseau.h_speed), int(vaisseau.v_speed),
+                int(vaisseau.angle), int(vaisseau.fuel),
+                surface.est_dans_la_zone(vaisseau))
 
+    def choose_action(self, state):
+        # Choisir une action basée sur l'état courant en utilisant epsilon-greedy
+        if random.uniform(0, 1) < self.epsilon:
+            return random.choice(self.actions)  # Exploration
+        else:
+            return self.best_action(state)  # Exploitation
 
-scenar = scenario1
+    def best_action(self, state):
+        # Trouver la meilleure action pour un état donné
+        if state not in self.q_table:
+            self.q_table[state] = np.zeros(len(self.actions))  # Initialiser si pas dans Q-table
+        return self.actions[np.argmax(self.q_table[state])]
+
+    def update_q_table(self, state, action, reward, next_state):
+        # Mise à jour de la Q-table pour améliorer la prise de décision
+        if state not in self.q_table:
+            self.q_table[state] = np.zeros(len(self.actions))
+        if next_state not in self.q_table:
+            self.q_table[next_state] = np.zeros(len(self.actions))
+
+        # Indice de l'action pour mise à jour
+        action_index = self.actions.index(action)
+        best_future_q = np.max(self.q_table[next_state])
+        
+        # Equation de mise à jour Q-learning
+        self.q_table[state][action_index] += self.alpha * (reward + self.gamma * best_future_q - self.q_table[state][action_index])
+
+    def get_reward(self, vaisseau):
+        # Calcul des récompenses basées sur la vitesse et la position pour encourager un atterrissage stable
+        if vaisseau.est_pose:
+            return 100  # Récompense élevée pour un atterrissage réussi
+        if vaisseau.detruit:
+            return -100  # Pénalité pour un crash
+        if vaisseau.angle == 0:
+            return 5
+        # Récompenses pour contrôler la vitesse
+        reward = - (abs(vaisseau.v_speed) + abs(vaisseau.h_speed))
+        if abs(vaisseau.v_speed) < max_v_speed and abs(vaisseau.h_speed) < max_h_speed:
+            reward += 10  # Récompense supplémentaire pour rester dans les limites de vitesse
+        return reward
+
+    def decay_epsilon(self):
+        # Réduire l'exploration au fil du temps
+        self.epsilon = max(0.01, self.epsilon * self.epsilon_decay)
+
+    def ia_appui(self, key):
+        return key
+
+scenar = scenario0
 
 # Initialisation des objets
 v = Vaisseau()
@@ -217,46 +327,53 @@ s = Surface(scenar['surface_mars'])
 a = Affichage()
 j = Jeu()
 
+actions = j.actions_possibles()
+
+ia = IALearning(actions)
+
 s.calcul_zone_atterissage()
 
 clock = pygame.time.Clock()
 
 # Boucle Pygame
+
 while True:
+    clock.tick(img_par_sec)
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
-            
+    
+    state = ia.get_state(v, s)
+    ia_action = ia.choose_action(state)
+    
+
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_SPACE]:
-        v = j.je_relance_le_jeu(v)
-    
-    if not v.detruit and not v.est_pose:
-        if keys[pygame.K_LEFT]:
-            v.angle += degres_par_tour
-        if keys[pygame.K_RIGHT]:
-            v.angle -= degres_par_tour
-        if keys[pygame.K_1]:
-            v.puissance = 0
-        if keys[pygame.K_2]:
-            v.puissance = 1
-        if keys[pygame.K_3]:
-            v.puissance = 2
-        if keys[pygame.K_4]:
-            v.puissance = 3
-        if keys[pygame.K_5]:
-            v.puissance = 4
-    
-    clock.tick(img_par_sec)
+    j.actions_clavier(keys, v, ia_action)
     
     
     
+
+    # Actualisation de l'état et affichage
     j.actualisation(v, a, s)
     j.touche_mars(a, v, s)
+
+    # Calcul de la récompense et mise à jour
+    reward = ia.get_reward(v)
+    next_state = ia.get_state(v, s)
+    ia.update_q_table(state, ia_action, reward, next_state)
+    
+    # Mise à jour d'exploration
+    ia.decay_epsilon()
 
     v.peut_atterir()
     
     j.fin_du_jeu(v)
-    
-    
-   
+     
+
+    # Vérifier fin du jeu et relancer si nécessaire
+    if v.detruit or v.est_pose:
+        v = j.je_relance_le_jeu(v)
+
+
+

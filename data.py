@@ -1,5 +1,5 @@
 echelle = 5 # 1/echelle
-img_par_sec = 24
+img_par_sec = 144
 
 degres_par_tour = 15
 
@@ -22,7 +22,7 @@ BLEU = (0, 0, 255)
 NOIR = (0, 0, 0)
 
 scenario0 = {
-    "surface_mars"   : [(0, 2200),(6999, 2200)],
+    "surface_mars"   : [(0, 150),(6999, 150)],
     "vaisseau"  :{"x":3500,"y":2500,"h_speed":0,"v_speed":0,"fuel":1000,"rotate":0,"power":0}
 }
 
