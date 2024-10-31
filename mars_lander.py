@@ -327,13 +327,14 @@ class IALearning:
             recompense += 100   if not  v.detruit   and     v.est_pose else -1
             recompense += 50    if      v.detruit   and     v.est_pose else -50
             
-            recompense += 30    if      v.peut_atterir()        else -1
+            recompense += 5     if      v.peut_atterir()        else -1
 
-            recompense += 25    if -30 <= abs(v.angle) <= 30    else -1
+            recompense += 5     if -30 <= abs(v.angle) <= 30    else -1
             recompense += 5     if abs(v.h_speed) < max_h_speed else -1
             recompense += 5     if abs(v.v_speed) < max_v_speed else -1
-            recompense += 10    if s.est_dans_la_zone(v)        else -1
-             
+            recompense += 50    if s.est_dans_la_zone(v)        else -1
+
+
             self.recompense = recompense
             return recompense
 
