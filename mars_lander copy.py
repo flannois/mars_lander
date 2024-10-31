@@ -1,8 +1,10 @@
 from data import *
+import pygame
 
-import pygame, math, random
+import math
 import numpy as np
 
+import random
 from time import sleep
 class Vaisseau:
     def init_vaisseau(self, info):
@@ -47,12 +49,6 @@ class Vaisseau:
             # Calcul des vitesses
             self.v_speed += gravite
 
-            # Blocage par angle max
-            if self.angle < -angle_vaisseau_max:
-                self.angle = -angle_vaisseau_max
-            elif self.angle > angle_vaisseau_max:
-                self.angle = angle_vaisseau_max
-
             # Conversion en radians
             angle_radians = math.radians(self.angle)
 
@@ -69,8 +65,7 @@ class Vaisseau:
             self.x += self.h_speed
 
     def peut_atterir(self):
-        if (self.angle == 0) and (abs(self.v_speed) < max_v_speed) and (abs(self.h_speed) < max_h_speed):
-            
+        if self.angle == 0 and abs(self.v_speed) < max_v_speed and abs(self.h_speed) < max_h_speed:
             return True
         else:
             return False
@@ -159,19 +154,19 @@ class Affichage:
         self.affiche_info("puissance",  vaisseau.puissance, (10,150))
         self.affiche_info("gravite",    gravite,            (10,175))
 
-        self.affiche_info("Img/sec",  img_par_sec,   (500,10))
-
-        if ia_active:
-            self.affiche_info("Tx ap",      ia.alpha,           (1000,0))
-            self.affiche_info("Rec fut",    ia.gamma,           (1000,25))
-            self.affiche_info("Tx exp",     ia.epsilon,         (1000,50))
-            self.affiche_info("Tx ap",      ia.epsilon_decay,   (1000,75))
-            
-            self.affiche_info("Tentative",  j.tentative,        (1000,125))
-            self.affiche_info("Atterissages",  j.att_reussi,    (1000,150))
-
-            self.affiche_info("Récompense",  ia.recompense,         (1000,200))
+        self.affiche_info("Tx ap",      ia.alpha,           (1000,0))
+        self.affiche_info("Rec fut",    ia.gamma,           (1000,25))
+        self.affiche_info("Tx exp",     ia.epsilon,         (1000,50))
+        self.affiche_info("Tx ap",      ia.epsilon_decay,   (1000,75))
         
+        self.affiche_info("Tentative",  j.tentative,        (1000,125))
+        self.affiche_info("Atterissages",  j.att_reussi,    (1000,150))
+
+        self.affiche_info("Récompense",  ia.recompense,         (1000,200))
+
+        
+
+        self.affiche_info("Img/sec",  img_par_sec,   (500,10))
 
 class Jeu:
     def __init__(self):
@@ -223,17 +218,15 @@ class Jeu:
             v.h_speed = 0
             
     def je_relance_le_jeu(self, v):
-
         self.tentative += 1
         v = None
         v = Vaisseau()
         v.init_vaisseau(scenar['vaisseau'])
-
         return v
     
     def actions_clavier(self, keys, v, ia_action):
+        
         if keys[pygame.K_SPACE]:
-            
             v = self.je_relance_le_jeu(v)
         
         if not v.detruit and not v.est_pose:
@@ -251,16 +244,14 @@ class Jeu:
                 v.puissance = 3
             if keys[pygame.K_5] or ia_action == '4':
                 v.puissance = 4
-
-
         return v
     
     def actions_possibles(self):
         actions = []
+        actions.append('left')
         actions.append('right')
-        actions.append('left') 
         actions.append('0')
-        actions.append('1')   
+        actions.append('1')
         actions.append('2')
         actions.append('3')
         actions.append('4')
@@ -269,91 +260,96 @@ class Jeu:
         
 
 class IALearning:
-    def __init__(self, actions, alpha, gamma, epsilon, epsilon_decay, ia_active):
-        self.actions = actions # C'est une liste des actions possibles que l'IA peut entreprendre. Cela définit l'espace d'action pour l'agent.
-        self.alpha = alpha # C'est le taux d'apprentissage. Il détermine dans quelle mesure les nouvelles informations vont remplacer les anciennes dans la Q-table. Un alpha plus élevé signifie que l'agent apprend plus rapidement, tandis qu'un alpha plus bas signifie qu'il apprend plus lentement.
-        self.gamma = gamma # C'est le facteur de discount. Il représente l'importance des récompenses futures par rapport aux récompenses immédiates. Un gamma proche de 1 signifie que l'agent valorise fortement les récompenses futures, tandis qu'un gamma proche de 0 signifie qu'il privilégie les récompenses immédiates.
-        self.epsilon = epsilon # C'est le taux d'exploration. Il détermine la probabilité que l'agent choisisse une action aléatoire (exploration) plutôt que celle qui semble la meilleure selon sa Q-table (exploitation). Un epsilon élevé favorise l'exploration, tandis qu'un epsilon plus bas favorise l'exploitation.
-        self.epsilon_decay = epsilon_decay # C'est le facteur de diminution de l'epsilon. Il détermine à quelle vitesse le taux d'exploration diminue au fil du temps. Cela permet à l'agent d'explorer davantage au début de l'apprentissage et d'exploiter ses connaissances acquises plus tard.
-        self.q_table = {} # C'est une table qui stocke les valeurs Q pour chaque état-action. Ces valeurs indiquent la qualité d'une action dans un état donné, permettant à l'agent de prendre des décisions éclairées.
-        self.recompense = 0 # Cette variable sert à stocker la récompense reçue après une action. Cela permet de mettre à jour la Q-table en fonction de l'expérience de l'agent.
-        self.recompences_cumulees = []  # C'est une liste qui suit les récompenses cumulées au fil du temps. Cela peut aider à évaluer la performance de l'agent pendant l'apprentissage.
-        self.ia_active = ia_active
+    def __init__(self, actions, alpha=0.1, gamma=0.9, epsilon=1.0, epsilon_decay=0.995):
+        # Liste des actions possibles : inclinaison et niveaux de puissance
+        self.actions = actions
+        self.alpha = alpha          # Taux d'apprentissage
+        self.gamma = gamma          # Facteur de récompense future
+        self.epsilon = epsilon      # Taux d'exploration
+        self.epsilon_decay = epsilon_decay
+        self.q_table = {}           # Table Q pour stocker les états et les actions
+        self.recompense = 0
 
     def recupere_etat(self, vaisseau, surface):
-        if self.ia_active:
-            # État défini par position, vitesse horizontale et verticale, carburant, et si en zone d'atterrissage
-            return (int(vaisseau.x), int(vaisseau.y), 
-                    int(vaisseau.h_speed), int(vaisseau.v_speed),
-                    int(vaisseau.angle), int(vaisseau.fuel),
-                    surface.est_dans_la_zone(vaisseau))
+        # État défini par position, vitesse horizontale et verticale, carburant, et si en zone d'atterrissage
+        return (int(vaisseau.x), int(vaisseau.y), 
+                int(vaisseau.h_speed), int(vaisseau.v_speed),
+                int(vaisseau.angle), int(vaisseau.fuel),
+                surface.est_dans_la_zone(vaisseau))
 
     def choisir_action(self, etat):
-        if self.ia_active:
-            # Choisir une action basée sur l'état courant en utilisant epsilon
-            if random.uniform(0, 1) < self.epsilon:
-                return random.choice(self.actions)  # Exploration
-            else:
-                return self.meilleure_action(etat)  # Exploitation
+        # Choisir une action basée sur l'état courant en utilisant epsilon-greedy
+        if random.uniform(0, 1) < self.epsilon:
+            return random.choice(self.actions)  # Exploration
+        else:
+            return self.meilleure_action(etat)  # Exploitation
 
     def meilleure_action(self, etat):
-        if self.ia_active:
-            # Trouver la meilleure action pour un état donné
-            if etat not in self.q_table:
-                self.q_table[etat] = np.zeros(len(self.actions))
-            return self.actions[np.argmax(self.q_table[etat])]
+        # Trouver la meilleure action pour un état donné
+        if etat not in self.q_table:
+            self.q_table[etat] = np.zeros(len(self.actions))  # Initialiser si pas dans Q-table
+        return self.actions[np.argmax(self.q_table[etat])]
 
     def update_q_table(self, etat, action, recompense, next_etat):
-        if self.ia_active:
-            # Mise à jour de la Q-table pour améliorer la prise de décision
-            if etat not in self.q_table:
-                self.q_table[etat] = np.zeros(len(self.actions))
-            if next_etat not in self.q_table:
-                self.q_table[next_etat] = np.zeros(len(self.actions))
+        # Mise à jour de la Q-table pour améliorer la prise de décision
+        if etat not in self.q_table:
+            self.q_table[etat] = np.zeros(len(self.actions))
+        if next_etat not in self.q_table:
+            self.q_table[next_etat] = np.zeros(len(self.actions))
 
-            # Indice de l'action pour mise à jour
-            action_index = self.actions.index(action)
-            best_future_q = np.max(self.q_table[next_etat])
-            
-            # Equation de mise à jour Q-learning
-            self.q_table[etat][action_index] += self.alpha * (recompense + self.gamma * best_future_q - self.q_table[etat][action_index])
+        # Indice de l'action pour mise à jour
+        action_index = self.actions.index(action)
+        best_future_q = np.max(self.q_table[next_etat])
+        
+        # Equation de mise à jour Q-learning
+        self.q_table[etat][action_index] += self.alpha * (recompense + self.gamma * best_future_q - self.q_table[etat][action_index])
 
     def recupere_recompense(self, a, v, s):
-        if self.ia_active:
-
-            #recompense = 100 - abs(v.v_speed) - abs(v.h_speed) 
-            recompense = 0
-            recompense += 1     if not  v.detruit   and not v.est_pose else -10
-            recompense += 100   if not  v.detruit   and     v.est_pose else -1
-            recompense += 50    if      v.detruit   and     v.est_pose else -50
+        
+        recompense = 100 - abs(v.v_speed) - abs(v.h_speed)
+        
+        # Récompense pour encourager un atterrissage stable
+        if v.est_pose:
+            recompense += 100  # Récompense élevée pour un atterrissage réussi
+        if v.detruit:
+            recompense -= 100  # Pénalité pour un crash
             
-            recompense += 30    if      v.peut_atterir()        else -1
+        # Récompenses pour contrôle et stabilité
+        if abs(v.angle) == 0:
+            recompense += 20
+        else:
+            recompense -= 20
 
-            recompense += 25    if -30 <= abs(v.angle) <= 30    else -1
-            recompense += 5     if abs(v.h_speed) < max_h_speed else -1
-            recompense += 5     if abs(v.v_speed) < max_v_speed else -1
-            recompense += 10    if s.est_dans_la_zone(v)        else -1
-             
-            self.recompense = recompense
-            return recompense
+        # Récompenses pour contrôle de vitesse
+        if v.x < max_h_speed:
+            recompense += 5
+        else:
+            recompense -= 5
+        
+        if v.y < max_h_speed:
+            recompense += 5
+        else:
+            recompense -= 5
+        
+
+        if v.en_dehors_de_la_zone:
+            recompense -= 5
+        elif s.est_dans_la_zone(v):
+            recompense += 5
+
+  
+
+        self.recompense = recompense
+        return recompense
 
     def decay_epsilon(self):
-        if self.ia_active:
-            # Réduire l'exploration au fil du temps
-            self.epsilon = max(0.01, self.epsilon * self.epsilon_decay)
-
-    def ajout_recompense_cumulative(self, recompence):
-        if self.ia_active:
-            if len(self.recompences_cumulees) == 0:
-                self.recompences_cumulees.append(recompence)
-            else:
-                self.recompences_cumulees.append(self.recompences_cumulees[-1] + recompence)
+        # Réduire l'exploration au fil du temps
+        self.epsilon = max(0.01, self.epsilon * self.epsilon_decay)
 
     def ia_appui(self, key):
-        if self.ia_active:
-            return key
+        return key
 
-scenar = scenario1
+scenar = scenario0
 
 # Initialisation des objets
 v = Vaisseau()
@@ -364,7 +360,7 @@ j = Jeu()
 
 actions = j.actions_possibles()
 
-ia = IALearning(actions, alpha, gamma, epsilon, epsilon_decay, ia_active)
+ia = IALearning(actions)
 
 s.calcul_zone_atterissage()
 
@@ -375,7 +371,6 @@ clock = pygame.time.Clock()
 while True:
     clock.tick(img_par_sec)
 
-    # Fermeture
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -383,9 +378,9 @@ while True:
     etat = ia.recupere_etat(v, s)
     ia_action = ia.choisir_action(etat)
     
-    # Gestion clavier
+
     keys = pygame.key.get_pressed()
-    v = j.actions_clavier(keys, v, ia_action)
+    j.actions_clavier(keys, v, ia_action)
 
     # Actualisation de l'état et affichage
     j.actualisation(v, a, s)
@@ -400,11 +395,12 @@ while True:
     ia.decay_epsilon()
 
     v.peut_atterir()
+    
     j.fin_du_jeu(v)
-    
+     
+
     # Vérifier fin du jeu et relancer si nécessaire
-    if (v.detruit or v.est_pose) and ia_active:
-    
+    if v.detruit or v.est_pose:
         v = j.je_relance_le_jeu(v)
 
 
