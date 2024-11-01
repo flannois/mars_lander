@@ -20,7 +20,6 @@ while run:
     rect.y += (keys[pygame.K_DOWN] - keys[pygame.K_UP]) * speed
     rect.centerx %= window.get_width()
     rect.centery %= window.get_height()
-    print(*line)
     color = "red" if any(rect.clipline(*line) for line in lines) else "green"
 
     window.fill(0)
