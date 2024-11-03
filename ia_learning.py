@@ -66,12 +66,12 @@ class IALearning:
 
             # Flo
             self.recompense += 1     if not v.detruit and not v.est_pose else 0
-            self.recompense += 100   if not v.detruit and v.est_pose else -1
-            self.recompense += 10    if v.detruit and v.est_pose else -1
-            self.recompense += 7     if v.peut_atterir() else -1
-            self.recompense += 5     if -30 <= abs(v.angle) <= 30 else -1
-            self.recompense += 3     if abs(v.h_speed) < max_h_speed else -1
-            self.recompense += 3     if abs(v.v_speed) < max_v_speed else -1
+            self.recompense += 100   if not v.detruit and v.est_pose else 0
+            self.recompense += 10    if v.detruit and v.est_pose else 0
+            self.recompense += 7     if v.peut_atterir() else 0
+            self.recompense += 5     if -30 <= abs(v.angle) <= 30 else 0
+            self.recompense += 3     if abs(v.h_speed) < max_h_speed else 0
+            self.recompense += 3     if abs(v.v_speed) < max_v_speed else 0
             self.recompense += 30    if s.est_dans_la_zone(v) else 0
             self.recompense += 20    if s.se_rapproche_de_la_zone(v) else 0
 
