@@ -1,26 +1,27 @@
+import random
+import numpy as np
+from data import *
+
 class IALearning:
-    def __init__(self, actions, alpha, gamma, epsilon, epsilon_decay, ia_active):
-        self.actions = actions # C'est une liste des actions possibles que l'IA peut entreprendre. Cela définit l'espace d'action pour l'agent.
-        self.alpha = alpha # C'est le taux d'apprentissage. Il détermine dans quelle mesure les nouvelles informations vont remplacer les anciennes dans la Q-table. Un alpha plus élevé signifie que l'agent apprend plus rapidement, tandis qu'un alpha plus bas signifie qu'il apprend plus lentement.
-        self.gamma = gamma # C'est le facteur de discount. Il représente l'importance des récompenses futures par rapport aux récompenses immédiates. Un gamma proche de 1 signifie que l'agent valorise fortement les récompenses futures, tandis qu'un gamma proche de 0 signifie qu'il privilégie les récompenses immédiates.
-        self.epsilon = epsilon # C'est le taux d'exploration. Il détermine la probabilité que l'agent choisisse une action aléatoire (exploration) plutôt que celle qui semble la meilleure selon sa Q-table (exploitation). Un epsilon élevé favorise l'exploration, tandis qu'un epsilon plus bas favorise l'exploitation.
-        self.epsilon_decay = epsilon_decay # C'est le facteur de diminution de l'epsilon. Il détermine à quelle vitesse le taux d'exploration diminue au fil du temps. Cela permet à l'agent d'explorer davantage au début de l'apprentissage et d'exploiter ses connaissances acquises plus tard.
-        self.q_table = {} # C'est une table qui stocke les valeurs Q pour chaque état-action. Ces valeurs indiquent la qualité d'une action dans un état donné, permettant à l'agent de prendre des décisions éclairées.
-        self.recompense = 0 # Cette variable sert à stocker la récompense reçue après une action. Cela permet de mettre à jour la Q-table en fonction de l'expérience de l'agent.
-        self.recompences_cumulees = []  # C'est une liste qui suit les récompenses cumulées au fil du temps. Cela peut aider à évaluer la performance de l'agent pendant l'apprentissage.
+    def __init__(self, scenar, actions, alpha, gamma, epsilon, epsilon_decay, ia_active):
+        self.scenar = scenar
+        self.actions = actions
+        self.alpha = alpha
+        self.gamma = gamma
+        self.epsilon = epsilon
+        self.epsilon_decay = epsilon_decay
+        self.q_table = {}
+        self.recompense = 0
+        self.recompenses_cumulees = []
         self.ia_active = ia_active
 
-    def recupere_etat(self, vaisseau, surface):
+    def recupere_etat(self, v, s, scenar):
         if self.ia_active:
-            # État défini par position, vitesse horizontale et verticale, carburant, et si en zone d'atterrissage
-            return (int(vaisseau.x), int(vaisseau.y), 
-                    int(vaisseau.h_speed), int(vaisseau.v_speed),
-                    int(vaisseau.angle), int(vaisseau.fuel),
-                    surface.est_dans_la_zone(vaisseau))
+            return (int(v.x), int(v.y), int(v.h_speed), int(v.v_speed), int(v.angle), int(v.fuel),
+                    s.est_dans_la_zone(v), s.se_rapproche_de_la_zone(v), s.calcul_zone_atterissage(scenar))
 
     def choisir_action(self, etat):
         if self.ia_active:
-            # Choisir une action basée sur l'état courant en utilisant epsilon
             if random.uniform(0, 1) < self.epsilon:
                 return random.choice(self.actions)  # Exploration
             else:
@@ -28,20 +29,17 @@ class IALearning:
 
     def meilleure_action(self, etat):
         if self.ia_active:
-            # Trouver la meilleure action pour un état donné
             if etat not in self.q_table:
                 self.q_table[etat] = np.zeros(len(self.actions))
             return self.actions[np.argmax(self.q_table[etat])]
 
     def update_q_table(self, etat, action, recompense, next_etat):
         if self.ia_active:
-            # Mise à jour de la Q-table pour améliorer la prise de décision
             if etat not in self.q_table:
                 self.q_table[etat] = np.zeros(len(self.actions))
             if next_etat not in self.q_table:
                 self.q_table[next_etat] = np.zeros(len(self.actions))
 
-            # Indice de l'action pour mise à jour
             action_index = self.actions.index(action)
             best_future_q = np.max(self.q_table[next_etat])
             
@@ -50,38 +48,46 @@ class IALearning:
 
     def recupere_recompense(self, a, v, s):
         if self.ia_active:
-
-            #recompense = 100 - abs(v.v_speed) - abs(v.h_speed) 
-            recompense = 0
-            recompense += 1     if not  v.detruit   and not v.est_pose else -10
-            recompense += 100   if not  v.detruit   and     v.est_pose else -1
-            recompense += 50    if      v.detruit   and     v.est_pose else -50
             
-            recompense += 5     if      v.peut_atterir()        else -1
+            self.recompense = 0
 
-            recompense += 5     if -30 <= abs(v.angle) <= 30    else -1
-            recompense += 5     if abs(v.h_speed) < max_h_speed else -1
-            recompense += 5     if abs(v.v_speed) < max_v_speed else -1
-            recompense += 50    if s.est_dans_la_zone(v)        else -1
+            # ChatGPT
+            #if not v.detruit:
+            #    self.recompense += 2 if not v.est_pose else 100  
+            #self.recompense += 3 if v.peut_atterir() else -1
+            #self.recompense += 3 if -30 <= abs(v.angle) <= 30 else -1
+            #self.recompense += 1 if abs(v.h_speed) < max_h_speed else 0
+            #self.recompense += 1 if abs(v.v_speed) < max_v_speed else 0
+            #self.recompense += 10 if s.est_dans_la_zone(v) else -10
+            #self.recompense += 5 if s.se_rapproche_de_la_zone(v) else -5
 
-            recompense += 10    if s.se_rapproche_de_la_zone(v) else -10
+            # Flo
+            self.recompense += 2     if not v.detruit and not v.est_pose else 0
+            self.recompense += 12    if not v.detruit and v.est_pose else -10
+            self.recompense += 10    if v.detruit and v.est_pose else -10
+            self.recompense += 7     if v.peut_atterir() else -1
+            self.recompense += 5     if -30 <= abs(v.angle) <= 30 else -1
+            self.recompense += 2     if abs(v.h_speed) < max_h_speed else 0
+            self.recompense += 2     if abs(v.v_speed) < max_v_speed else 0
+            self.recompense += 10    if s.est_dans_la_zone(v) else -10
+            self.recompense += 10    if s.se_rapproche_de_la_zone(v) else -10
 
-            
 
-            self.recompense = recompense
-            return recompense
+            return self.recompense
 
     def decay_epsilon(self):
         if self.ia_active:
-            # Réduire l'exploration au fil du temps
             self.epsilon = max(0.01, self.epsilon * self.epsilon_decay)
 
-    def ajout_recompense_cumulative(self, recompence):
+    def ajout_recompense_cumulative(self, recompense):
         if self.ia_active:
-            if len(self.recompences_cumulees) == 0:
-                self.recompences_cumulees.append(recompence)
+            if not self.recompenses_cumulees:
+                self.recompenses_cumulees.append(recompense)
             else:
-                self.recompences_cumulees.append(self.recompences_cumulees[-1] + recompence)
+                self.recompenses_cumulees.append(self.recompenses_cumulees[-1] + recompense)
+    
+    def recup_recompense(self):
+        return self.recompenses_cumulees[-1] if self.recompenses_cumulees else 0
 
     def ia_appui(self, key):
         if self.ia_active:

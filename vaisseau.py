@@ -21,6 +21,7 @@ class Vaisseau:
             return False
 
     def verif_si_HS(self):
+
         if self.en_dehors_de_la_zone():
             self.detruit = True
             return True
@@ -46,10 +47,11 @@ class Vaisseau:
             self.v_speed += gravite
 
             # Blocage par angle max
-            if self.angle < -angle_vaisseau_max:
-                self.angle = -angle_vaisseau_max
-            elif self.angle > angle_vaisseau_max:
-                self.angle = angle_vaisseau_max
+            if not angle_vaisseau_max == 0:
+                if self.angle < -angle_vaisseau_max:
+                    self.angle = -angle_vaisseau_max
+                elif self.angle > angle_vaisseau_max:
+                    self.angle = angle_vaisseau_max
 
             # Conversion en radians
             angle_radians = math.radians(self.angle)
@@ -67,8 +69,7 @@ class Vaisseau:
             self.x += self.h_speed
 
     def peut_atterir(self):
-        if (self.angle == 0) and (abs(self.v_speed) < max_v_speed) and (abs(self.h_speed) < max_h_speed):
-            
+        if self.angle == 0 and abs(self.v_speed) < max_v_speed and abs(self.h_speed) < max_h_speed:
             return True
         else:
             return False

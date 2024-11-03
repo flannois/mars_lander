@@ -14,31 +14,60 @@ class Surface:
         return self.atterissage
 
     def est_dans_la_zone(self,v):
-        zoneAtterissageGauche, zoneAtterissageDroite = self.atterissage
-        if zoneAtterissageGauche[0] < v.x < zoneAtterissageDroite[0]:
+        return True if self.atterissage[0][0] < v.x < self.atterissage[1][0] else False
+        
+    def est_a_gauche_de_la_zone(self, v):
+        return True if v.x < self.atterissage[0][0] else False 
+    
+    def est_a_droite_de_la_zone(self, v):
+
+        return True if v.x > self.atterissage[1][0] else False
+    
+    def est_en_haut_de_la_zone(self, v):
+        return True if v.y < self.atterissage[1][1] else False
+
+    def est_en_bas_de_la_zone(self, v):
+        return True if v.y > self.atterissage[1][1] else False
+        
+    def va_a_gauche(self, v):
+        return True if v.v_speed < 0 else False
+
+    def va_a_droite(self, v):
+        return True if v.v_speed > 0 else False
+    
+    def va_en_haut(self, v):
+        return True if v.h_speed < 0 else False
+    
+    def va_en_bas(self, v):
+        return True if v.h_speed > 0 else False
+        
+
+    def se_rapproche_de_la_zone(self, v):
+        # en haut a gauche
+        if self.est_en_haut_de_la_zone(v) and self.est_a_gauche_de_la_zone(v):
+            if self.va_en_bas(v) or self.va_a_droite(v):
+                return True 
+                
+        # en haut a droite
+        elif self.est_en_haut_de_la_zone(v) and self.est_a_droite_de_la_zone(v):
+            if self.va_en_bas(v) or self.va_a_gauche(v):  
+                return True
+            
+        # en bas a gauche
+        elif self.est_en_bas_de_la_zone(v) and self.est_a_gauche_de_la_zone(v):
+            if self.va_en_haut(v) or self.va_a_droite(v):
+                return True   
+            
+        # en bas a droite
+        elif self.est_en_bas_de_la_zone(v) and self.est_a_droite_de_la_zone(v):
+            if self.va_en_haut(v) or self.va_a_gauche(v):
+                return True 
+        
+        # Atterit
+        elif self.est_dans_la_zone(v) and self.va_en_bas(v):
             return True
+            
         else:
             return False
+                
 
-    def se_rapproche_de_la_zone(self, v, scenar):
-        #ICI JE TRAVAILLE
-
-        vaisseau_va_a_gauche = False
-        vaisseau_va_a_droite = False
-        vaisseau_va_en_bas = False
-        vaisseau_va_en_haut = False
-
-        if v.h_speed > 0:
-            vaisseau_va_a_droite = True
-        elif v.h_speed < 0:
-            vaisseau_va_a_gauche = True
-
-        if v.v_speed < 0:
-            vaisseau_va_en_haut = True
-        elif v.v_speed > 0:
-            vaisseau_va_en_bas = True
-
-        attG, attD = self.calcul_zone_atterissage(scenar)
-
-        if vaisseau_va_en_bas and vaisseau_va_a_droite and v.x < attG[0] and v.y < attG[1]:
-            ter = 1

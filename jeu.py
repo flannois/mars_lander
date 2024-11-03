@@ -32,19 +32,10 @@ class Jeu:
             pt4 = pt4 // echelle
 
             points.append(((pt1, pt2), (pt3, pt4)))
-        print(points)
-        #atterissage = True if any(a.rect.clipline(*point) for point in points) else False
-        atterissage = False
-        for point in points:
-            
-            if any(a.rect.clipline(*point)):
-                print(points)
-                print(point, v.x, v.y)
-                
-                atterissage = True
-
+        
+        atterissage = True if any(a.rect.clipline(*point) for point in points) else False
+    
         if atterissage:
-            print()
             if s.est_dans_la_zone(v) and v.peut_atterir() and not v.detruit:
                 self.est_gagne = True
                 v.est_pose = True

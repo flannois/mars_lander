@@ -1,9 +1,6 @@
 from data import *
 
-import pygame, random
-import numpy as np
-
-from time import sleep
+import pygame
 
 from vaisseau import Vaisseau
 from jeu import Jeu
@@ -12,7 +9,7 @@ from surface import Surface
 from ia_learning import IALearning
 
 
-scenar = scenario1
+scenar = scenario0
 
 # Initialisation des objets
 v = Vaisseau()
@@ -23,7 +20,7 @@ j = Jeu(scenar)
 
 actions = j.actions_possibles()
 
-ia = IALearning(actions, alpha, gamma, epsilon, epsilon_decay, ia_active)
+ia = IALearning(scenar, actions, alpha, gamma, epsilon, epsilon_decay, ia_active)
 
 s.calcul_zone_atterissage(scenar)
 
@@ -38,7 +35,7 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
     
-    etat = ia.recupere_etat(v, s)
+    etat = ia.recupere_etat(v, s, scenar)
     ia_action = ia.choisir_action(etat)
     
     # Gestion clavier
@@ -49,11 +46,12 @@ while True:
     j.actualisation(v, a, s, ia)
     j.touche_mars(a, v, s)
 
-    s.se_rapproche_de_la_zone(v, scenar)
+    s.se_rapproche_de_la_zone(v)
 
     # Calcul de la récompense et mise à jour
     recompense = ia.recupere_recompense(a, v, s)
-    next_etat = ia.recupere_etat(v, s)
+    ia.ajout_recompense_cumulative(recompense)
+    next_etat = ia.recupere_etat(v, s, scenar)
     ia.update_q_table(etat, ia_action, recompense, next_etat)
     
     # Mise à jour d'exploration
@@ -62,10 +60,28 @@ while True:
     v.peut_atterir()
     j.fin_du_jeu(v)
     
+    if affiche_espion:
+        espion = ""
+        if v.en_dehors_de_la_zone(): espion += "en_dehors_de_la_zone "
+        if v.peut_atterir(): espion += "peut_atterir "
+        if s.est_a_droite_de_la_zone(v): espion += "est_a_droite_de_la_zone "
+        if s.est_a_gauche_de_la_zone(v): espion += "est_a_gauche_de_la_zone "
+        if s.est_dans_la_zone(v): espion += "est_dans_la_zone "
+        if s.est_en_bas_de_la_zone(v): espion += "est_en_bas_de_la_zone "
+        if s.est_en_haut_de_la_zone(v): espion += "est_en_haut_de_la_zone "
+        if s.se_rapproche_de_la_zone(v): espion += "se_rapproche_de_la_zone "
+        if s.va_a_droite(v): espion += "va_a_droite "
+        if s.va_a_gauche(v): espion += "va_a_gauche "
+        if s.va_en_bas(v): espion += "va_en_bas "
+        if s.va_en_haut(v): espion += "va_en_haut "
+        if v.detruit: espion += "detruit "
+        if v.est_pose: espion += "pose "
+        print(espion)
+    
     # Vérifier fin du jeu et relancer si nécessaire
     if (v.detruit or v.est_pose) and ia_active:
     
-        v = j.je_relance_le_jeu(v, scenar)
+        v = j.je_relance_le_jeu(v)
 
 
 
