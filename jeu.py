@@ -66,10 +66,30 @@ class Jeu:
             v = self.je_relance_le_jeu(v)
         
         if not v.detruit and not v.est_pose:
-            if keys[pygame.K_LEFT] or ia_action == 'left':
-                v.angle += degres_par_tour
+            if not ia_active:
+                if keys[pygame.K_RIGHT]:
+                    v.angle -= degres_par_tour
+                if keys[pygame.K_LEFT]:
+                    v.angle += degres_par_tour
+                if keys[pygame.K_1]:
+                    v.puissance = 0
+                if keys[pygame.K_2]:
+                    v.puissance = 1
+                if keys[pygame.K_3]:
+                    v.puissance = 2
+                if keys[pygame.K_4]:
+                    v.puissance = 3
+                if keys[pygame.K_5]:
+                    v.puissance = 4
+
+            else:
+                v.angle, v.puissance = ia_action
+
+            """
             if keys[pygame.K_RIGHT] or ia_action == 'right':
                 v.angle -= degres_par_tour
+            if keys[pygame.K_LEFT] or ia_action == 'left':
+                v.angle += degres_par_tour
             if keys[pygame.K_1] or ia_action == '0':
                 v.puissance = 0
             if keys[pygame.K_2] or ia_action == '1':
@@ -80,18 +100,44 @@ class Jeu:
                 v.puissance = 3
             if keys[pygame.K_5] or ia_action == '4':
                 v.puissance = 4
+            """
+      
 
 
         return v
     
-    def actions_possibles(self):
-        actions = []
-        actions.append('right')
-        actions.append('left') 
-        actions.append('0')
-        actions.append('1')   
-        actions.append('2')
-        actions.append('3')
-        actions.append('4')
+    def toutes_actions_possibles(self, v):
+        self.toutes_les_actions = []
+        for a in range(5):
+            for b in range(-6, 7):
+                self.toutes_les_actions.append((b*degres_par_tour , a))
+
+        #actions = []
+        #actions.append('right')
+        #actions.append('left') 
+        #actions.append('0')
+        #actions.append('1')   
+        #actions.append('2')
+        #actions.append('3')
+        #actions.append('4')
         
-        return actions
+        return self.toutes_les_actions
+    
+    def recup_actions_possibles(self, v):
+
+        actions_possibles = []
+        for action in self.toutes_les_actions:
+            angle, puissance = action
+            if (v.angle != angle_vaisseau_max or v.angle != -angle_vaisseau_max) and \
+                (v.puissance <= 4 or v.puissance <= 0):
+
+                if (v.angle - 15 == angle or v.angle + 15 == angle or v.angle == angle) and \
+                (puissance + 1 == v.puissance or puissance - 1 == v.puissance or puissance == v.puissance):
+                    
+                    actions_possibles.append(action)
+
+        
+        
+ 
+        return actions_possibles
+        

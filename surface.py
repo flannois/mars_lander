@@ -20,11 +20,10 @@ class Surface:
         return True if v.x < self.atterissage[0][0] else False 
     
     def est_a_droite_de_la_zone(self, v):
-
         return True if v.x > self.atterissage[1][0] else False
     
     def est_en_haut_de_la_zone(self, v):
-        return True if v.y < self.atterissage[1][1] else False
+        return True if v.y < self.atterissage[0][1] else False
 
     def est_en_bas_de_la_zone(self, v):
         return True if v.y > self.atterissage[1][1] else False

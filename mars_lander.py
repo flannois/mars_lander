@@ -18,7 +18,7 @@ s = Surface(scenar['surface_mars'])
 a = Affichage()
 j = Jeu(scenar)
 
-actions = j.actions_possibles()
+actions = j.toutes_actions_possibles(v)
 
 ia = IALearning(scenar, actions, alpha, gamma, epsilon, epsilon_decay, ia_active)
 
@@ -36,7 +36,16 @@ while True:
             pygame.quit()
     
     etat = ia.recupere_etat(v, s, scenar)
-    ia_action = ia.choisir_action(etat)
+
+    actions_possibles = j.recup_actions_possibles(v)
+
+    print(f"action:{len(actions_possibles)} - {actions_possibles}")
+    
+    
+    ia_action = ia.choisir_action(etat, actions_possibles)
+    
+    
+    print(ia_action)
     
     # Gestion clavier
     keys = pygame.key.get_pressed()
