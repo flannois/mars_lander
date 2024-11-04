@@ -35,7 +35,7 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
     
-    etat = ia.recupere_etat(v, s, scenar)
+    etat = ia.recupere_etat(v, s)
 
     actions_possibles = j.recup_actions_possibles(v)
 
@@ -57,7 +57,7 @@ while True:
     # Calcul de la récompense et mise à jour
     recompense = ia.recupere_recompense(a, v, s)
     ia.ajout_recompense_cumulative(recompense)
-    next_etat = ia.recupere_etat(v, s, scenar)
+    next_etat = ia.recupere_etat(v, s)
     ia.update_q_table(etat, ia_action, recompense, next_etat)
     
     # Mise à jour d'exploration
