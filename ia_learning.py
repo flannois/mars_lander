@@ -122,10 +122,10 @@ class IALearning:
 
     def recupere_etat(self, v, s):
         if self.ia_active:
-            return (float(v.x), 
-                    float(v.y), 
-                    float(v.h_speed), 
-                    float(v.v_speed), 
+            return (int(v.x), 
+                    int(v.y), 
+                    round(v.h_speed,1), 
+                    round(v.v_speed,1),
                     float(v.angle), 
                     float(v.fuel),
                     s.est_dans_la_zone(v), 
@@ -133,7 +133,8 @@ class IALearning:
                     s.atterissage[0][1],
                     s.atterissage[1][1],
                     v.detruit, v.peut_atterir(), 
-                    v.est_pose)
+                    v.est_pose,
+                    )
 
     def choisir_action(self, etat, actions_possibles):
         if self.ia_active:
@@ -153,9 +154,11 @@ class IALearning:
         if self.ia_active:
             if etat not in self.q_table:
                 self.q_table[etat] = np.zeros(len(self.actions))
+                
             if next_etat not in self.q_table:
                 self.q_table[next_etat] = np.zeros(len(self.actions))
-
+                
+           
             action_index = self.actions.index(action)
             best_future_q = np.max(self.q_table[next_etat])
             

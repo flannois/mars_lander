@@ -39,11 +39,8 @@ while True:
 
     actions_possibles = j.recup_actions_possibles(v)
 
-    
-    
     ia_action = ia.choisir_action(etat, actions_possibles)
-    
-    
+        
     # Gestion clavier
     keys = pygame.key.get_pressed()
     v = j.actions_clavier(keys, v, ia_action)
