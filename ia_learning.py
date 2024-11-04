@@ -18,24 +18,45 @@ class IALearning:
 
     def recupere_etat(self, v, s):
         if self.ia_active:
-            return (int(v.x), 
-                    int(v.y), 
-                    round(v.h_speed,1), 
-                    round(v.v_speed,1),
-                    float(v.angle), 
-                    float(v.fuel),
-                    s.est_dans_la_zone(v), 
-                    s.se_rapproche_de_la_zone(v), 
-                    s.atterissage[0][1],
-                    s.atterissage[1][1],
-                    v.detruit, v.peut_atterir(), 
-                    v.est_pose,
-                    )
-
-    def choisir_action(self, etat, actions_possibles):
+           
+            return (
+                v.en_dehors_de_la_zone(),
+                v.peut_atterir(),
+                s.est_a_droite_de_la_zone(v),
+                s.est_a_gauche_de_la_zone(v),
+                s.est_dans_la_zone(v),
+                s.est_en_bas_de_la_zone(v),
+                s.est_en_haut_de_la_zone(v),
+                s.se_rapproche_de_la_zone(v),
+                s.va_a_droite(v),
+                s.va_a_gauche(v),
+                s.va_en_bas(v),
+                s.va_en_haut(v),
+                v.detruit,
+                v.est_pose,
+            )
+                        
+            # Version avant idée BOOLEEN
+            """
+                return (int(v.x), 
+                        int(v.y), 
+                        round(v.h_speed,1), 
+                        round(v.v_speed,1),
+                        float(v.angle), 
+                        float(v.fuel),
+                        s.est_dans_la_zone(v), 
+                        s.se_rapproche_de_la_zone(v), 
+                        s.atterissage[0][1],
+                        s.atterissage[1][1],
+                        v.detruit, v.peut_atterir(), 
+                        v.est_pose,
+                        )
+            """
+                    
+    def choisir_action(self, etat, actions_possibles, toutes_les_actions):
         if self.ia_active:
             if random.uniform(0, 1) < self.epsilon:
-                return random.choice(actions_possibles)  # Exploration
+                return random.choice(toutes_les_actions)  # Exploration
             else:
                 return self.meilleure_action(etat, actions_possibles)  # Exploitation
 
@@ -50,7 +71,6 @@ class IALearning:
         if self.ia_active:
             if etat not in self.q_table:
                 self.q_table[etat] = np.zeros(len(self.actions))
-                
             if next_etat not in self.q_table:
                 self.q_table[next_etat] = np.zeros(len(self.actions))
                 
@@ -59,7 +79,7 @@ class IALearning:
             best_future_q = np.max(self.q_table[next_etat])
             
             # Equation de mise à jour Q-learning
-            print(self.alpha * (recompense + self.gamma * best_future_q - self.q_table[etat][action_index]))
+            
             self.q_table[etat][action_index] += self.alpha * (recompense + self.gamma * best_future_q - self.q_table[etat][action_index])
             
 
@@ -79,15 +99,15 @@ class IALearning:
             #self.recompense += 5 if s.se_rapproche_de_la_zone(v) else -5
 
             # Flo
-            self.recompense += 10     if not v.detruit and not v.est_pose else -10
-            self.recompense += 1000   if not v.detruit and v.est_pose else 0
-            self.recompense += 100    if v.detruit and v.est_pose else 0
-            self.recompense += 70     if v.peut_atterir() else -30
-            self.recompense += 50     if -30 <= abs(v.angle) <= 30 else -10
-            self.recompense += 30     if abs(v.h_speed) < max_h_speed else -20
-            self.recompense += 30     if abs(v.v_speed) < max_v_speed else -20
-            self.recompense += 300    if s.est_dans_la_zone(v) else -10
-            self.recompense += 200    if s.se_rapproche_de_la_zone(v) else -10
+            self.recompense += 1     if not v.detruit and not v.est_pose else -1
+            self.recompense += 100   if not v.detruit and v.est_pose else 0
+            self.recompense += 10    if v.detruit and v.est_pose else 0
+            self.recompense += 7     if v.peut_atterir() else -3
+            self.recompense += 5     if -30 <= abs(v.angle) <= 30 else -1
+            self.recompense += 3     if abs(v.h_speed) < max_h_speed else -2
+            self.recompense += 3     if abs(v.v_speed) < max_v_speed else -2
+            self.recompense += 30    if s.est_dans_la_zone(v) else -1
+            self.recompense += 20    if s.se_rapproche_de_la_zone(v) else -1
 
 
             return self.recompense

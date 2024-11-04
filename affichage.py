@@ -60,9 +60,14 @@ class Affichage:
         self.affiche_info("puissance",  v.puissance,(10,150))
         self.affiche_info("gravite",    gravite,    (10,175))
 
-        self.affiche_info("Img/sec",    img_par_sec,(500,10))
+        self.affiche_info("Img/sec",    img_par_sec,(500,0))
 
         if ia_active:
+
+            self.affiche_info("Récompense",     ia.recompense,      (500,25))
+            self.affiche_info("Cumul Recomp",   ia.recup_recompense(),(500,50))
+            self.affiche_info("Q_TABLE",        len(ia.q_table),    (500,75))
+
             self.affiche_info("Tx ap",          ia.alpha,           (1000,0))
             self.affiche_info("Rec fut",        ia.gamma,           (1000,25))
             self.affiche_info("Tx exp",         ia.epsilon,         (1000,50))
@@ -71,8 +76,7 @@ class Affichage:
             self.affiche_info("Tentative",      j.tentative,        (1000,125))
             self.affiche_info("Atterissages",   j.att_reussi,       (1000,150))
 
-            self.affiche_info("Récompense",     ia.recompense,      (1000,200))
-            self.affiche_info("Cumul Recomp",   ia.recup_recompense(),(1000,225))
+            
 
 
         

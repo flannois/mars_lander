@@ -9,7 +9,7 @@ from surface import Surface
 from ia_learning import IALearning
 
 
-scenar = scenario3
+scenar = scenario0
 
 # Initialisation des objets
 v = Vaisseau()
@@ -18,9 +18,9 @@ s = Surface(scenar['surface_mars'])
 a = Affichage()
 j = Jeu(scenar)
 
-actions = j.toutes_actions_possibles(v)
+toutes_actions_possible = j.toutes_actions_possibles(v)
 
-ia = IALearning(scenar, actions, alpha, gamma, epsilon, epsilon_decay, ia_active)
+ia = IALearning(scenar, toutes_actions_possible, alpha, gamma, epsilon, epsilon_decay, ia_active)
 
 s.calcul_zone_atterissage(scenar)
 
@@ -39,7 +39,7 @@ while True:
 
     actions_possibles = j.recup_actions_possibles(v)
 
-    ia_action = ia.choisir_action(etat, actions_possibles)
+    ia_action = ia.choisir_action(etat, actions_possibles, toutes_actions_possible)
         
     # Gestion clavier
     keys = pygame.key.get_pressed()
@@ -63,7 +63,7 @@ while True:
     v.peut_atterir()
     j.fin_du_jeu(v)
 
-    print(ia.q_table)
+    
     
     if affiche_espion:
         espion = ""
