@@ -18,7 +18,7 @@ if ia_active:
     affiche_espion = False
     img_par_sec = 10000
     gravite = 3.711
-    gravite = 2
+    
     angle_vaisseau_max = 90
 else:
     affiche_espion = True

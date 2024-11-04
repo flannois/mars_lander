@@ -9,7 +9,7 @@ from surface import Surface
 from ia_learning import IALearning
 
 
-scenar = scenario0
+scenar = scenario3
 
 # Initialisation des objets
 v = Vaisseau()
@@ -62,6 +62,8 @@ while True:
 
     v.peut_atterir()
     j.fin_du_jeu(v)
+
+    print(ia.q_table)
     
     if affiche_espion:
         espion = ""
