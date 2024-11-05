@@ -43,28 +43,28 @@ class Surface:
 
     def se_rapproche_de_la_zone(self, v):
         # en haut a gauche
-        if self.est_en_haut_de_la_zone(v) and self.est_a_gauche_de_la_zone(v):
+        if self.est_en_haut_de_la_zone(v) and self.est_a_gauche_de_la_zone(v) and not self.est_dans_la_zone:
             if self.va_en_bas(v) and self.va_a_droite(v):
                 return True
             else:
                 return False
                 
         # en haut a droite
-        elif self.est_en_haut_de_la_zone(v) and self.est_a_droite_de_la_zone(v):
+        elif self.est_en_haut_de_la_zone(v) and self.est_a_droite_de_la_zone(v) and not self.est_dans_la_zone:
             if self.va_en_bas(v) and self.va_a_gauche(v):  
                 return True
             else:
                 return False
             
         # en bas a gauche
-        elif self.est_en_bas_de_la_zone(v) and self.est_a_gauche_de_la_zone(v):
+        elif self.est_en_bas_de_la_zone(v) and self.est_a_gauche_de_la_zone(v) and not self.est_dans_la_zone:
             if self.va_en_haut(v) and self.va_a_droite(v):
                 return True
             else:
                 return False   
             
         # en bas a droite
-        elif self.est_en_bas_de_la_zone(v) and self.est_a_droite_de_la_zone(v):
+        elif self.est_en_bas_de_la_zone(v) and self.est_a_droite_de_la_zone(v) and not self.est_dans_la_zone:
             if self.va_en_haut(v) and self.va_a_gauche(v):
                 return True
             else:
