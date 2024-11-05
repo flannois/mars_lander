@@ -39,7 +39,7 @@ while True:
 
     actions_possibles = j.recup_actions_possibles(v)
 
-    ia_action = ia.choisir_action(etat, actions_possibles, toutes_actions_possible)
+    ia_action = ia.choisir_action(etat, actions_possibles)
         
     # Gestion clavier
     keys = pygame.key.get_pressed()
@@ -47,6 +47,8 @@ while True:
 
     # Actualisation de l'état et affichage
     j.actualisation(v, a, s, ia)
+
+    j.affichage_du_jeu(a, v, s, ia)
     j.touche_mars(a, v, s)
 
     s.se_rapproche_de_la_zone(v)
@@ -63,7 +65,6 @@ while True:
     v.peut_atterir()
     j.fin_du_jeu(v)
 
-    
     
     if affiche_espion:
         espion = ""

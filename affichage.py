@@ -1,5 +1,6 @@
 import pygame
 from data import *
+import math
 
 class Affichage:
     def __init__(self):
@@ -11,9 +12,6 @@ class Affichage:
         self.fenY = fenY // echelle
         self.screen = pygame.display.set_mode((self.fenX, self.fenY))
 
-        # Couleur de l'arrière-plan
-        self.BLANC = (255, 255, 255)
-        self.ROUGE = (255, 0, 0)
 
     # Fonction pour dessiner la surface de Mars
     def dessiner_surface(self, surface_mars):
@@ -23,7 +21,7 @@ class Affichage:
             x2, y2 = surface_mars[i + 1]
             x2, y2 = x2 // echelle, y2 // echelle
 
-            pygame.draw.line(self.screen, self.ROUGE, (x1, y1), (x2, y2), 10)
+            pygame.draw.line(self.screen, ROUGE, (x1, y1), (x2, y2), 10)
 
     def dessiner_vaisseau(self, v, j):
         
@@ -35,13 +33,43 @@ class Affichage:
         if v.est_pose:
             img = "images/vaisseauA.png"
         
+        # Dessin vaisseau
         image = pygame.image.load(img)
         image = pygame.transform.rotate(image, v.angle)  # Pour incliner l'image selon l'angle
         self.rect = image.get_rect(center=(v.x // echelle, v.y // echelle))
         self.screen.blit(image, self.rect)
 
+        # Dessin trainée
+        centre_vaisseau = self.rect.center
+
+        # Conversion en radians
+        angle_radians = math.radians(v.angle)
+
+        # Calcul du sinus et du cosinus
+        sin = math.sin(angle_radians)
+        cos = math.cos(angle_radians)
+
+        v_bas_trainee = (centre_vaisseau[0] + sin * v.puissance * 30, centre_vaisseau[1] + cos * v.puissance * 30)
+
+        match v.puissance:
+            case 1:
+                couleur = VERT
+            case 2:
+                couleur = JAUNE
+            case 3:
+                couleur = ORANGE
+            case 4:
+                couleur = ROUGE
+            case _:
+                couleur = GRIS
+                    
+        pygame.draw.line(self.screen, couleur, centre_vaisseau, v_bas_trainee, 20)
+
+
+        
+
     def effacer_tout(self):
-        self.screen.fill(self.BLANC)
+        self.screen.fill(BLANC)
 
     def affiche_info(self, nom, valeur, pos):
         font = pygame.font.Font(None, 36)

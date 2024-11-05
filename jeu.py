@@ -13,6 +13,7 @@ class Jeu:
         v.actualisation()
         v.verif_si_HS()
 
+    def affichage_du_jeu(self, a, v, s, ia):
         # AFFICHAGE
         a.effacer_tout()
         a.ecrire_info(v, ia, self)

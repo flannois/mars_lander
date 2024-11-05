@@ -22,7 +22,7 @@ if ia_active:
     angle_vaisseau_max = 90
 else:
     affiche_espion = True
-    img_par_sec = 1
+    img_par_sec = 5
     gravite = 0
     angle_vaisseau_max = 0 # 0 pour pas de limite
 
@@ -44,6 +44,10 @@ BLANC = (255, 255, 255)
 ROUGE = (255, 0, 0)
 BLEU = (0, 0, 255)
 NOIR = (0, 0, 0)
+GRIS = (127, 127, 127)
+ORANGE = (255, 127, 0)
+JAUNE = (255, 255, 0)
+VERT = (0, 255, 0)
 
 scenario0 = {
     "surface_mars"   : [(0,fenY - 200), (3000,fenY - 750), (5500,fenY - 750), (fenX,fenY - 200)],

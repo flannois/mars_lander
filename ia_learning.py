@@ -4,9 +4,8 @@ import numpy as np
 from data import *
 
 class IALearning:
-    def __init__(self, scenar, actions, alpha, gamma, epsilon, epsilon_decay, ia_active):
+    def __init__(self, scenar, toutes_les_actions, alpha, gamma, epsilon, epsilon_decay, ia_active):
         self.scenar = scenar
-        self.actions = actions
         self.alpha = alpha
         self.gamma = gamma
         self.epsilon = epsilon
@@ -15,6 +14,7 @@ class IALearning:
         self.recompense = 0
         self.recompenses_cumulees = []
         self.ia_active = ia_active
+        self.toutes_les_actions = toutes_les_actions
 
     def recupere_etat(self, v, s):
         if self.ia_active:
@@ -53,10 +53,10 @@ class IALearning:
                         )
             """
                     
-    def choisir_action(self, etat, actions_possibles, toutes_les_actions):
+    def choisir_action(self, etat, actions_possibles):
         if self.ia_active:
             if random.uniform(0, 1) < self.epsilon:
-                return random.choice(toutes_les_actions)  # Exploration
+                return random.choice(self.toutes_les_actions)  # Exploration
             else:
                 return self.meilleure_action(etat, actions_possibles)  # Exploitation
 
@@ -65,21 +65,20 @@ class IALearning:
             if etat not in self.q_table:
                 self.q_table[etat] = np.zeros(len(actions_possibles))
             
-            return self.actions[np.argmax(self.q_table[etat])]
+            return self.toutes_les_actions[np.argmax(self.q_table[etat])]
 
     def update_q_table(self, etat, action, recompense, next_etat):
         if self.ia_active:
             if etat not in self.q_table:
-                self.q_table[etat] = np.zeros(len(self.actions))
+                self.q_table[etat] = np.zeros(len(self.toutes_les_actions))
             if next_etat not in self.q_table:
-                self.q_table[next_etat] = np.zeros(len(self.actions))
+                self.q_table[next_etat] = np.zeros(len(self.toutes_les_actions))
                 
            
-            action_index = self.actions.index(action)
+            action_index = self.toutes_les_actions.index(action)
             best_future_q = np.max(self.q_table[next_etat])
             
             # Equation de mise à jour Q-learning
-            
             self.q_table[etat][action_index] += self.alpha * (recompense + self.gamma * best_future_q - self.q_table[etat][action_index])
             
 
