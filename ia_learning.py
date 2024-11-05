@@ -34,6 +34,8 @@ class IALearning:
                 s.va_en_haut(v),
                 v.detruit,
                 v.est_pose,
+                v.a_plus_dessence,
+                
             )
                         
             # Version avant idée BOOLEEN
