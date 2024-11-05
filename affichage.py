@@ -49,7 +49,7 @@ class Affichage:
         sin = math.sin(angle_radians)
         cos = math.cos(angle_radians)
 
-        v_bas_trainee = (centre_vaisseau[0] + sin * v.puissance * 30, centre_vaisseau[1] + cos * v.puissance * 30)
+        v_bas_trainee = (centre_vaisseau[0] + sin * v.puissance * 15, centre_vaisseau[1] + cos * v.puissance * 15)
 
         match v.puissance:
             case 1:
@@ -66,10 +66,9 @@ class Affichage:
         pygame.draw.line(self.screen, couleur, centre_vaisseau, v_bas_trainee, 5)
 
 
-        
 
     def effacer_tout(self):
-        self.screen.fill(BLANC)
+        self.screen.fill(BORDEAUX)
 
     def affiche_info(self, nom, valeur, pos):
         font = pygame.font.Font(None, 36)

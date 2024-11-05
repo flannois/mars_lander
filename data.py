@@ -41,6 +41,7 @@ max_h_speed = 20
 
 # Couleurs
 BLANC = (255, 255, 255)
+BORDEAUX = (255, 100, 100)
 ROUGE = (255, 0, 0)
 BLEU = (0, 0, 255)
 NOIR = (0, 0, 0)
@@ -50,7 +51,7 @@ JAUNE = (255, 255, 0)
 VERT = (0, 255, 0)
 
 scenario0 = {
-    "surface_mars"   : [(0,fenY - 200), (3000,fenY - 750), (5500,fenY - 750), (fenX,fenY - 200)],
+    "surface_mars"   : [(0,fenY - 200), (3000,fenY - 750), (4000,fenY - 750), (fenX,fenY - 200)],
     "vaisseau"  :{"x":2000,"y":fenY -2500,"h_speed":0,"v_speed":0,"fuel":1000,"rotate":0,"power":0}
 }
 

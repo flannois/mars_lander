@@ -39,7 +39,7 @@ while True:
 
     actions_possibles = j.recup_actions_possibles(v)
 
-    ia_action = ia.choisir_action(etat, actions_possibles)
+    ia_action = ia.choisir_action(etat)
         
     # Gestion clavier
     keys = pygame.key.get_pressed()
@@ -54,7 +54,7 @@ while True:
     s.se_rapproche_de_la_zone(v)
 
     # Calcul de la récompense et mise à jour
-    recompense = ia.recupere_recompense(a, v, s)
+    recompense = ia.recupere_recompense(a, v, s, j)
     ia.ajout_recompense_cumulative(recompense)
     next_etat = ia.recupere_etat(v, s)
     ia.update_q_table(etat, ia_action, recompense, next_etat)
@@ -66,6 +66,7 @@ while True:
     j.fin_du_jeu(v)
 
     
+
     if affiche_espion:
         espion = ""
         if v.en_dehors_de_la_zone(): espion += "en_dehors_de_la_zone "
