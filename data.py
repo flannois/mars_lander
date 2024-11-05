@@ -12,7 +12,7 @@ gamma = 0.9     # C'est le facteur de discount. Il représente l'importance des 
 epsilon = 0.8     # C'est le taux d'exploration. Il détermine la probabilité que l'agent choisisse une action aléatoire (exploration) plutôt que celle qui semble la meilleure selon sa Q-table (exploitation). Un epsilon élevé favorise l'exploration, tandis qu'un epsilon plus bas favorise l'exploitation.
 epsilon_decay = 0.99991    # C'est le facteur de diminution de l'epsilon. Il détermine à quelle vitesse le taux d'exploration diminue au fil du temps. Cela permet à l'agent d'explorer davantage au début de l'apprentissage et d'exploiter ses connaissances acquises plus tard.
 
-ia_active = True
+ia_active = False
 
 if ia_active:
     affiche_espion = False

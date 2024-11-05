@@ -63,7 +63,7 @@ class Affichage:
             case _:
                 couleur = GRIS
                     
-        pygame.draw.line(self.screen, couleur, centre_vaisseau, v_bas_trainee, 20)
+        pygame.draw.line(self.screen, couleur, centre_vaisseau, v_bas_trainee, 5)
 
 
         

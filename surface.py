@@ -69,7 +69,7 @@ class Surface:
                 return True
             else:
                 return False
-        
+    
         # Atterit
         elif self.est_dans_la_zone(v) and self.va_en_bas(v):
             return True
