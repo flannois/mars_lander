@@ -40,6 +40,14 @@ class Vaisseau:
             return True
         else:
             return False
+        
+    def est_parfaitement_droit(self):
+        if self.angle == 0:
+            return True
+        else:
+            return False
+        
+    
 
     def actualisation(self):
         if self.fuel <= 0 or self.detruit or self.est_pose:

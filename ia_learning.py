@@ -115,32 +115,43 @@ class IALearning:
             #Flo booleen mode
             
             rec_pos = 3
-            rec_neg = -1
+            
 
 
             self.recompense += rec_pos    if s.est_a_droite_de_la_zone(v) and s.va_a_gauche(v) and not s.est_dans_la_zone(v) else 0
             self.recompense += rec_pos    if s.est_a_gauche_de_la_zone(v) and s.va_a_droite(v) and not s.est_dans_la_zone(v) else 0
             self.recompense += rec_pos    if s.est_en_bas_de_la_zone(v) and s.va_en_haut(v) else 0
             self.recompense += rec_pos    if s.est_en_haut_de_la_zone(v) and s.va_en_bas(v) else 0
+            self.recompense += rec_pos    if s.se_rapproche_de_la_zone(v) else 0
 
-            self.recompense += rec_pos+5    if s.est_dans_la_zone(v) and s.va_en_bas(v) else rec_neg
+            if s.est_dans_la_zone(v):
+                self.recompense += 5
 
-            self.recompense += rec_pos      if s.se_rapproche_de_la_zone(v) else rec_neg
-            self.recompense += rec_pos+2    if s.est_dans_la_zone(v) else 0
+                if s.va_en_bas(v):
+                    self.recompense += rec_pos
+
+                if v.est_droit():
+                    self.recompense += 2
+                elif v.est_parfaitement_droit():
+                    self.recompense += 5
+                else:
+                    self.recompense += 0
             
-
-
+            
+            self.recompense += rec_pos    if s.est_dans_la_zone(v) else 0
+            
             if j.touche_mars(a, v, s):
                 self.recompense += 15
-                self.recompense += 5        if v.peut_atterir else rec_neg
+                self.recompense += 10       if v.peut_atterir else -10
             
-                self.recompense += rec_pos  if v.est_droit() else rec_neg
-                self.recompense += -5       if v.detruit else 5
-                self.recompense += rec_pos  if v.h_speed > max_h_speed else -3
-                self.recompense += rec_pos  if v.v_speed > max_v_speed else -3
+                self.recompense += 3        if v.est_droit() else 0
+                self.recompense += 30       if not v.detruit else -30
+                self.recompense += 5  if v.h_speed > max_h_speed else -1
+                self.recompense += 5  if v.v_speed > max_v_speed else -1
                 
                 self.recompense += 10       if s.est_dans_la_zone(v) and v.detruit else -10
-
+                self.recompense += 100       if v.est_pose else -10
+                
             
             return self.recompense
 
