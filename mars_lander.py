@@ -2,6 +2,8 @@ from data import *
 
 import pygame
 
+import datetime
+
 from vaisseau import Vaisseau
 from jeu import Jeu
 from affichage import Affichage
@@ -33,9 +35,15 @@ while True:
     # Fermeture
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+
+            nom = f"{str(datetime.datetime.now()).replace(' ','_').replace(":","-")}.txt"
+            with open(f"historique\{nom}", "w+") as f:
+                f.write(str(ia.q_table))
+
             pygame.quit()
     
     etat = ia.recupere_etat(v, s)
+    
 
     actions_possibles = j.recup_actions_possibles(v)
 
