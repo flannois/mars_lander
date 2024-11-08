@@ -14,6 +14,7 @@ epsilon_decay = 0.99991    # C'est le facteur de diminution de l'epsilon. Il dé
 
 ia_active = True
 charger_historique = True
+vider_historique = True
 
 if ia_active:
     affiche_espion = False

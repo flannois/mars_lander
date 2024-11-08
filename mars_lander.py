@@ -32,7 +32,7 @@ clock = pygame.time.Clock()
 
 while True:
     ia.recupere_historique()
-
+    ia.supprimer_historique()
     clock.tick(img_par_sec)
     # Fermeture
     for event in pygame.event.get():
