@@ -19,19 +19,21 @@ class IALearning:
         self.toutes_les_actions = toutes_les_actions
 
     def recupere_historique(self):
-        if charger_historique and len(self.q_table) == 0:
-            fichiers = os.listdir("historique")
-            if len(fichiers) > 0:
-                fichier_historique = fichiers[-1]
-                with open(f"historique/{fichier_historique}", "rb") as f:
-                    self.q_table = pickle.load(f)
+        if self.ia_active:
+            if charger_historique and len(self.q_table) == 0:
+                fichiers = os.listdir("historique")
+                if len(fichiers) > 0:
+                    fichier_historique = fichiers[-1]
+                    with open(f"historique/{fichier_historique}", "rb") as f:
+                        self.q_table = pickle.load(f)
 
     def supprimer_historique(self):
-        if vider_historique:
-            fichiers = os.listdir("historique")
-            if len(fichiers) > 0:
-                for f in fichiers:
-                    os.remove(f"historique/{f}")
+        if self.ia_active:
+            if vider_historique:
+                fichiers = os.listdir("historique")
+                if len(fichiers) > 0:
+                    for f in fichiers:
+                        os.remove(f"historique/{f}")
 
     def choisir_action(self, etat):
         if self.ia_active:
