@@ -13,6 +13,7 @@ epsilon = 0.8     # C'est le taux d'exploration. Il détermine la probabilité q
 epsilon_decay = 0.99991    # C'est le facteur de diminution de l'epsilon. Il détermine à quelle vitesse le taux d'exploration diminue au fil du temps. Cela permet à l'agent d'explorer davantage au début de l'apprentissage et d'exploiter ses connaissances acquises plus tard.
 
 ia_active = True
+charger_historique = True
 
 if ia_active:
     affiche_espion = False

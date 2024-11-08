@@ -2,6 +2,8 @@
 import random
 import numpy as np
 from data import *
+import os
+import pickle
 
 class IALearning:
     def __init__(self, scenar, toutes_les_actions, alpha, gamma, epsilon, epsilon_decay, ia_active):
@@ -15,7 +17,15 @@ class IALearning:
         self.recompenses_cumulees = []
         self.ia_active = ia_active
         self.toutes_les_actions = toutes_les_actions
-        
+
+    def recupere_historique(self):
+        if charger_historique and len(self.q_table) == 0:
+            fichiers = os.listdir("historique")
+            if len(fichiers) > 0:
+                fichier_historique = fichiers[-1]
+                with open(f"historique/{fichier_historique}", "rb") as f:
+                    self.q_table = pickle.load(f)
+                    
     def choisir_action(self, etat):
         if self.ia_active:
             if random.uniform(0, 1) < self.epsilon:
@@ -65,6 +75,8 @@ class IALearning:
                 #v.a_plus_dessence,
                 v.est_droit(),
                 v.detruit,
+                v.va_trop_vite_h(),
+                v.va_trop_vite_v(),
                 
             )
                         
@@ -118,12 +130,14 @@ class IALearning:
             
 
 
-            self.recompense += rec_pos    if s.est_a_droite_de_la_zone(v) and s.va_a_gauche(v) and not s.est_dans_la_zone(v) else 0
-            self.recompense += rec_pos    if s.est_a_gauche_de_la_zone(v) and s.va_a_droite(v) and not s.est_dans_la_zone(v) else 0
-            self.recompense += rec_pos    if s.est_en_bas_de_la_zone(v) and s.va_en_haut(v) else 0
-            self.recompense += rec_pos    if s.est_en_haut_de_la_zone(v) and s.va_en_bas(v) else 0
-            self.recompense += rec_pos    if s.se_rapproche_de_la_zone(v) else 0
-
+            self.recompense += rec_pos     if s.est_a_droite_de_la_zone(v) and s.va_a_gauche(v) and not s.est_dans_la_zone(v) else 0
+            self.recompense += rec_pos     if s.est_a_gauche_de_la_zone(v) and s.va_a_droite(v) and not s.est_dans_la_zone(v) else 0
+            self.recompense += rec_pos     if s.est_en_bas_de_la_zone(v) and s.va_en_haut(v) else 0
+            self.recompense += rec_pos     if s.est_en_haut_de_la_zone(v) and s.va_en_bas(v) else 0
+            self.recompense += rec_pos     if s.se_rapproche_de_la_zone(v) else 0
+            self.recompense += rec_pos  if not v.va_trop_vite_h() else 0
+            self.recompense += rec_pos  if not v.va_trop_vite_v() else 0
+            
             if s.est_dans_la_zone(v):
                 self.recompense += 5
 
@@ -136,6 +150,9 @@ class IALearning:
                     self.recompense += 5
                 else:
                     self.recompense += 0
+
+                if v.peut_atterir():
+                    self.recompense += 10
             
             
             self.recompense += rec_pos    if s.est_dans_la_zone(v) else 0

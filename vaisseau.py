@@ -83,7 +83,27 @@ class Vaisseau:
             self.x += self.h_speed
 
     def peut_atterir(self):
-        if self.angle == 0 and abs(self.v_speed) < max_v_speed and abs(self.h_speed) < max_h_speed:
+        if self.angle == 0 and not self.va_trop_vite():
             return True
         else:
             return False
+        
+    def va_trop_vite(self):
+        if abs(self.v_speed) < max_v_speed and abs(self.h_speed) < max_h_speed:
+            return False
+        else:
+            return True
+        
+    def va_trop_vite_h(self):
+        if abs(self.h_speed) < max_h_speed:
+            return False
+        else:
+            return True
+        
+    def va_trop_vite_v(self):
+        if abs(self.v_speed) < max_v_speed:
+            return False
+        else:
+            return True
+        
+    

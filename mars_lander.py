@@ -1,5 +1,5 @@
 from data import *
-
+import pickle
 import pygame
 
 import datetime
@@ -31,15 +31,18 @@ clock = pygame.time.Clock()
 # Boucle Pygame
 
 while True:
+    ia.recupere_historique()
+
     clock.tick(img_par_sec)
     # Fermeture
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
 
             nom = f"{str(datetime.datetime.now()).replace(' ','_').replace(":","-")}.txt"
-            with open(f"historique\{nom}", "w+") as f:
-                f.write(str(ia.q_table))
-
+            with open(f"historique/{nom}", "wb") as f:
+                pickle.dump(ia.q_table, f)
+                
+            
             pygame.quit()
     
     etat = ia.recupere_etat(v, s)
